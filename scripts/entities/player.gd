@@ -22,10 +22,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		var d := _nearest_device()
 		if d:
 			d.repair()
-	elif event.is_action_pressed("tamper_debug"):
-		var d := _nearest_device()
-		if d:
-			d.tamper()
 
 
 func _nearest_device() -> BaseDevice:

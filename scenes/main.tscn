@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="1_fsm"]
 [ext_resource type="Script" path="res://scripts/day/day_working.gd" id="2_work"]
@@ -8,6 +8,10 @@
 [ext_resource type="Script" path="res://scripts/entities/player.gd" id="6_player"]
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="7_hud"]
 [ext_resource type="Script" path="res://scripts/ui/booth_mask.gd" id="8_mask"]
+[ext_resource type="Script" path="res://scripts/entities/monkey.gd" id="9_monkey"]
+[ext_resource type="Script" path="res://scripts/entities/monkey_states/sneaking.gd" id="10_sneak"]
+[ext_resource type="Script" path="res://scripts/entities/monkey_states/tampering.gd" id="11_tamper"]
+[ext_resource type="Script" path="res://scripts/entities/monkey_states/fleeing.gd" id="12_flee"]
 
 [sub_resource type="RectangleShape2D" id="Rect_booth"]
 size = Vector2(160, 120)
@@ -61,6 +65,26 @@ script = ExtResource("6_player")
 shape = SubResource("Rect_player")
 
 [node name="Camera2D" type="Camera2D" parent="World/Player"]
+
+[node name="Monkey" type="Node2D" parent="World"]
+position = Vector2(560, -200)
+script = ExtResource("9_monkey")
+
+[node name="Audio" type="AudioStreamPlayer2D" parent="World/Monkey"]
+max_distance = 900.0
+bus = &"Master"
+
+[node name="StateMachine" type="Node" parent="World/Monkey"]
+script = ExtResource("1_fsm")
+
+[node name="Sneaking" type="Node" parent="World/Monkey/StateMachine"]
+script = ExtResource("10_sneak")
+
+[node name="Tampering" type="Node" parent="World/Monkey/StateMachine"]
+script = ExtResource("11_tamper")
+
+[node name="Fleeing" type="Node" parent="World/Monkey/StateMachine"]
+script = ExtResource("12_flee")
 
 [node name="BoothMask" type="CanvasLayer" parent="."]
 layer = 1
