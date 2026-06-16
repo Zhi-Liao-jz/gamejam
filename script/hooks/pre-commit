@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# 提交前代码检查：对本次暂存的 .gd 文件跑 格式检查 + 静态检查。
+# 不通过则拒绝提交。详见 代码规范.md。
+set -euo pipefail
+
+LINE_LENGTH=100
+
+# 收集本次暂存的 .gd 文件（新增 / 修改 / 复制）
+FILES=()
+while IFS= read -r f; do
+	[ -n "$f" ] && FILES+=("$f")
+done < <(git diff --cached --name-only --diff-filter=ACM -- '*.gd')
+
+if [ ${#FILES[@]} -eq 0 ]; then
+	exit 0
+fi
+
+echo "==> 提交前代码检查（${#FILES[@]} 个 .gd 文件）"
+
+# 工具检查：缺工具直接拦截，保证"必须通过检查"
+if ! command -v gdformat >/dev/null 2>&1 || ! command -v gdlint >/dev/null 2>&1; then
+	echo "❌ 未找到 gdformat / gdlint。请先安装代码检查工具："
+	echo "     pip install \"gdtoolkit==4.*\""
+	exit 1
+fi
+
+fail=0
+
+echo "--> [1/2] 格式检查（gdformat --check）"
+if ! gdformat --check --line-length "$LINE_LENGTH" "${FILES[@]}"; then
+	echo ""
+	echo "❌ 格式不符合规范。运行下面命令自动修复后重新 git add："
+	echo "     gdformat --line-length $LINE_LENGTH ${FILES[*]}"
+	fail=1
+fi
+
+echo "--> [2/2] 静态检查（gdlint）"
+if ! gdlint "${FILES[@]}"; then
+	echo ""
+	echo "❌ 静态检查未通过，请按上面提示修复。"
+	fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+	echo ""
+	echo "================================================"
+	echo "  提交已被拦截。修复后重新 git add && git commit"
+	echo "  （确需强制跳过：git commit --no-verify，不推荐）"
+	echo "================================================"
+	exit 1
+fi
+
+echo "✅ 代码检查通过，允许提交。"
+exit 0
