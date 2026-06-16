@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://c2t0pkcucmj6v"]
+
+[ext_resource type="Script" uid="uid://1m6f4eq4872" path="res://scenes/menu/main_menu.gd" id="1_nl8w3"]
+[ext_resource type="Script" uid="uid://61sqvsxqbalk" path="res://scenes/menu/panel_with_theme.gd" id="2_3rkf3"]
+[ext_resource type="PackedScene" uid="uid://ktugldv8ml0y" path="res://scenes/menu/options_panel.tscn" id="3_247la"]
+
+[node name="main_menu" type="Node" unique_id=836307196]
+script = ExtResource("1_nl8w3")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=253440779]
+
+[node name="main_menu_panel" type="PanelContainer" parent="CanvasLayer" unique_id=1531654164]
+unique_name_in_owner = true
+offset_left = 372.0
+offset_top = 283.0
+offset_right = 524.0
+offset_bottom = 466.0
+script = ExtResource("2_3rkf3")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/main_menu_panel" unique_id=1048759380]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/main_menu_panel/MarginContainer" unique_id=537680010]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/main_menu_panel/MarginContainer/VBoxContainer" unique_id=1739317880]
+layout_mode = 2
+text = "抽完烟就下班！"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/main_menu_panel/MarginContainer/VBoxContainer" unique_id=1033140652]
+layout_mode = 2
+
+[node name="continue_button" type="Button" parent="CanvasLayer/main_menu_panel/MarginContainer/VBoxContainer/VBoxContainer" unique_id=585805709]
+unique_name_in_owner = true
+layout_mode = 2
+text = "继续游戏"
+
+[node name="new_game_button" type="Button" parent="CanvasLayer/main_menu_panel/MarginContainer/VBoxContainer/VBoxContainer" unique_id=1330690719]
+unique_name_in_owner = true
+layout_mode = 2
+text = "新游戏"
+
+[node name="options_button" type="Button" parent="CanvasLayer/main_menu_panel/MarginContainer/VBoxContainer/VBoxContainer" unique_id=1860894264]
+unique_name_in_owner = true
+layout_mode = 2
+text = "选项"
+
+[node name="quit_button" type="Button" parent="CanvasLayer/main_menu_panel/MarginContainer/VBoxContainer/VBoxContainer" unique_id=813635084]
+unique_name_in_owner = true
+layout_mode = 2
+text = "退出"
+
+[node name="options_panel" parent="CanvasLayer" unique_id=257303825 instance=ExtResource("3_247la")]
+unique_name_in_owner = true
+visible = false

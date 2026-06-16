@@ -11,7 +11,7 @@ var _pool_index: int = 0
 var _last_played_times: Dictionary = {}
 
 const SOUNDS: Dictionary = {
-
+	"boop": "res://assets/sound/boop.ogg"
 }
 
 func _ready() -> void :

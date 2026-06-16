@@ -11,8 +11,19 @@ config_version=5
 [application]
 
 config/name="gamajam"
+run/main_scene="res://scenes/main_level.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+SoundManager="*uid://ca8wpucgsuvxa"
+EventBus="*uid://dafldy7q2ujh0"
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=540
 
 [physics]
 

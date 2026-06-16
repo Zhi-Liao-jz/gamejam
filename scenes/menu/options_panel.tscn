@@ -1,0 +1,174 @@
+[gd_scene format=3 uid="uid://ktugldv8ml0y"]
+
+[ext_resource type="Script" uid="uid://d353vy7cxwqac" path="res://scenes/menu/options_panel.gd" id="1_2e2xv"]
+
+[node name="option_panel" type="PanelContainer" unique_id=257303825]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -305.0
+offset_top = -170.0
+offset_right = 305.0
+offset_bottom = 170.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_2e2xv")
+metadata/_custom_type_script = "uid://61sqvsxqbalk"
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=119775522]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1617637480]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="tabs" type="TabContainer" parent="MarginContainer/VBoxContainer" unique_id=1061740018]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 2
+
+[node name="general" type="MarginContainer" parent="MarginContainer/VBoxContainer/tabs" unique_id=2127651730]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 7
+metadata/_tab_index = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/tabs/general" unique_id=1140060822]
+layout_mode = 2
+follow_focus = true
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/tabs/general/ScrollContainer" unique_id=1686255179]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 70
+theme_override_constants/margin_bottom = 5
+
+[node name="controls" type="MarginContainer" parent="MarginContainer/VBoxContainer/tabs" unique_id=159387175]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 7
+metadata/_tab_index = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/tabs/controls" unique_id=1612182428]
+layout_mode = 2
+follow_focus = true
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/tabs/controls/ScrollContainer" unique_id=1441159452]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 70
+theme_override_constants/margin_bottom = 5
+
+[node name="graphics_" type="MarginContainer" parent="MarginContainer/VBoxContainer/tabs" unique_id=40356322]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 7
+metadata/_tab_index = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/tabs/graphics_" unique_id=1097530133]
+layout_mode = 2
+follow_focus = true
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/tabs/graphics_/ScrollContainer" unique_id=1091510847]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 70
+theme_override_constants/margin_bottom = 5
+
+[node name="audio_" type="MarginContainer" parent="MarginContainer/VBoxContainer/tabs" unique_id=1732820192]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 7
+metadata/_tab_index = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/tabs/audio_" unique_id=1853511022]
+layout_mode = 2
+follow_focus = true
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer" unique_id=542526474]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 70
+theme_override_constants/margin_bottom = 5
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer" unique_id=1939847834]
+layout_mode = 2
+columns = 2
+
+[node name="mastrer_volume_label" type="Label" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=1718227874]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "主音量"
+
+[node name="master_volume_slider" type="HSlider" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=1915782249]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+
+[node name="sound_effects_volume_label" type="Label" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=803948801]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "音效音量"
+
+[node name="sound_effects_volume_slider" type="HSlider" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=1923475242]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+
+[node name="music_volume_label" type="Label" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=2082567438]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "音乐音量"
+
+[node name="music_volume_slider" type="HSlider" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=2008638120]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1161029975]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="cancel_button" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1884505529]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 30)
+layout_mode = 2
+
+[node name="ok_button" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1056643280]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 30)
+layout_mode = 2
