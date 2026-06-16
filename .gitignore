@@ -1,3 +1,6 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# new-branch 脚本的本地用户配置（每人各自的用户名缩写）
+.branch-user
