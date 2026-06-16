@@ -27,6 +27,15 @@ func _on_repair() -> void:
 	stability = 100.0
 
 
+func _sound_key_for(s: DeviceState) -> String:
+	match s:
+		DeviceState.TAMPERED:
+			return "gen_tampered"  # 隐约嗡鸣
+		DeviceState.FAULT, DeviceState.SEVERE:
+			return "gen_fault"  # 较响低频喘振
+	return ""
+
+
 func inspect() -> Dictionary:
 	var d := super.inspect()
 	d["stability"] = stability
