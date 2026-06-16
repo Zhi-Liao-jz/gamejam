@@ -36,6 +36,9 @@ func _build_placeholder_streams() -> void:
 	_streams["gen_fault"] = _make_tone(80.0, "saw", 0.5, true, 0.5, 6.0)
 	# 警报：880Hz 方波间断哔声（一次性，故障爆发时全局提示）
 	_streams["alarm"] = _make_tone(880.0, "square", 1.2, false, 0.4, 0.0, 4.0)
+	# 猴子声（第3步）——亭内只靠这些判断外面：脚步=预警，翻找=决策窗口
+	_streams["monkey_step"] = _make_tone(130.0, "square", 0.5, true, 0.22, 0.0, 4.0)
+	_streams["monkey_fiddle"] = _make_tone(420.0, "saw", 0.5, true, 0.28, 9.0)
 
 
 ## 合成一段 16-bit 单声道 PCM 音。loop=true 时按整数周期取样以保证无缝循环。

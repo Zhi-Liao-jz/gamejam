@@ -51,7 +51,6 @@ func _setup_input() -> void:
 	_bind("move_left", [KEY_A, KEY_LEFT])
 	_bind("move_right", [KEY_D, KEY_RIGHT])
 	_bind("interact", [KEY_E, KEY_SPACE])
-	_bind("tamper_debug", [KEY_M])
 	_bind("retry", [KEY_R])
 	_bind("next_day", [KEY_N, KEY_ENTER])
 
