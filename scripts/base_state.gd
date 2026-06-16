@@ -1,13 +1,22 @@
-extends Node
 class_name BaseState
+extends Node
 
-signal transition_signal(new_state_type:int,msg:Dictionary)
+signal transition_signal(new_state_type: int, msg: Dictionary)
 
-func update(delta:float):
+@onready var fsm := get_parent() as BaseStateMachine
+
+
+func update(_delta: float) -> void:
 	pass
-func physics_update(delta:float):
+
+
+func physics_update(_delta: float) -> void:
 	pass
-func exit():
+
+
+func exit() -> void:
 	pass
-func enter(msg:Dictionary={}):
+
+
+func enter(_msg: Dictionary = {}) -> void:
 	pass

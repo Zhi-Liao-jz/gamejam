@@ -11,8 +11,15 @@ config_version=5
 [application]
 
 config/name="gamajam"
+run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+EventBus="*res://global/event_bus.gd"
+SoundManager="*res://global/sound_manager.gd"
+Game="*res://global/game_state.gd"
 
 [physics]
 
