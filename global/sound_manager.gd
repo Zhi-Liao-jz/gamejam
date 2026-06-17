@@ -11,6 +11,12 @@ var _pool_index: int = 0
 
 var _last_played_times: Dictionary = {}
 
+const SOUNDS: Dictionary = {
+	"boop": "res://assets/sound/boop.ogg"
+}
+
+func _ready() -> void :
+	AudioServer.add_bus(1)
 # 运行时程序化合成的占位音（Demo 阶段，无需素材文件）。
 # 取流时优先查这里，没有再回退到 SOUNDS 里的素材路径。
 # 第 2 步用：以后接真音频素材时把对应 key 填进 SOUNDS 即可，调用方不用改。
@@ -20,13 +26,15 @@ var _streams: Dictionary = {}
 func _ready() -> void:
 	for i in MAX_PLAYERS:
 		var p = AudioStreamPlayer.new()
-		p.bus = "Master"
+		p.bus = AudioServer.get_bus_name(1)
 		p.volume_db = linear_to_db(SFX_VOLUME)
 		add_child(p)
 		_pool.append(p)
 	_build_placeholder_streams()
 	print("SoundManager ready, pool: ", _pool.size())
 
+static func volume_effects(volume_db):
+	AudioServer.set_bus_volume_db(1, volume_db)
 
 # ---------- 程序化占位音（临时，换真素材时整段删掉） ----------
 func _build_placeholder_streams() -> void:

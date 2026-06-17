@@ -17,6 +17,7 @@ var today_loss: float = 0.0
 
 func _ready() -> void:
 	_setup_input()
+	Savegame.inti_save()
 
 
 func reset_day() -> void:
@@ -62,3 +63,4 @@ func _bind(action: StringName, keys: Array) -> void:
 		var ev := InputEventKey.new()
 		ev.physical_keycode = k
 		InputMap.action_add_event(action, ev)
+		
