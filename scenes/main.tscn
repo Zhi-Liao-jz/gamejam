@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="1_fsm"]
 [ext_resource type="Script" path="res://scripts/day/day_working.gd" id="2_work"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scripts/entities/monkey_states/sneaking.gd" id="10_sneak"]
 [ext_resource type="Script" path="res://scripts/entities/monkey_states/tampering.gd" id="11_tamper"]
 [ext_resource type="Script" path="res://scripts/entities/monkey_states/fleeing.gd" id="12_flee"]
+[ext_resource type="Script" path="res://scripts/ui/generator_panel.gd" id="13_genpanel"]
 
 [sub_resource type="RectangleShape2D" id="Rect_booth"]
 size = Vector2(160, 120)
@@ -133,3 +134,9 @@ offset_left = 24.0
 offset_top = 24.0
 offset_right = 416.0
 offset_bottom = 266.0
+
+[node name="GenPanelLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="GeneratorPanel" type="Control" parent="GenPanelLayer"]
+script = ExtResource("13_genpanel")
