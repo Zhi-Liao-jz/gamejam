@@ -23,6 +23,7 @@ var tamper_delay: float = 0.0
 var spawn_interval: float = 0.0
 
 var target_device: BaseDevice = null
+var audio_pitch_base: float = 1.0  # 多猴音高错开防糊，由 spawner 按序号设置
 
 var _audio: AudioStreamPlayer2D = null
 var _player: Node2D = null
@@ -50,16 +51,28 @@ func _apply_day_scaling() -> void:
 	tamper_delay += Game.equip_tamper_bonus()  # 加固锁拉宽救火窗口（加法，在封底之后）
 
 
-## 选一个 NORMAL 设备当目标；无可篡改设备返回 null。只依赖统一接口，以后多设备零改动。
+## 选一个 NORMAL 设备当目标；无可篡改设备返回 null。
+## 防扎堆：优先排除其他活猴正盯着的设备，让多猴分到不同设备（"救A还是救B"）；
+## 排除后没得选（猴比可抢设备多）则回退到全部 NORMAL 随机，保证不空转。
 func pick_target() -> BaseDevice:
-	var candidates: Array[BaseDevice] = []
+	var normal: Array[BaseDevice] = []
 	for node: Node in get_tree().get_nodes_in_group("devices"):
 		var dev := node as BaseDevice
 		if dev and dev.state == BaseDevice.DeviceState.NORMAL:
-			candidates.append(dev)
-	if candidates.is_empty():
+			normal.append(dev)
+	if normal.is_empty():
 		return null
-	return candidates[randi() % candidates.size()]
+	var taken := {}
+	for node: Node in get_tree().get_nodes_in_group("monkeys"):
+		var other := node as Monkey
+		if other and other != self and is_instance_valid(other.target_device):
+			taken[other.target_device] = true
+	var free: Array[BaseDevice] = []
+	for dev in normal:
+		if not taken.has(dev):
+			free.append(dev)
+	var pool := free if not free.is_empty() else normal
+	return pool[randi() % pool.size()]
 
 
 ## 取玩家引用（懒缓存，避免每帧全量遍历分组）。
@@ -78,7 +91,7 @@ func play_loop(key: String, pitch: float = 1.0) -> void:
 	var stream := SoundManager.get_stream(key)
 	if stream and _audio.stream != stream:
 		_audio.stream = stream
-	_audio.pitch_scale = pitch
+	_audio.pitch_scale = pitch * audio_pitch_base
 	if stream and not _audio.playing:
 		_audio.play()
 
