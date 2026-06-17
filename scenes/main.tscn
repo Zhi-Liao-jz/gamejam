@@ -1,0 +1,142 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="1_fsm"]
+[ext_resource type="Script" path="res://scripts/day/day_working.gd" id="2_work"]
+[ext_resource type="Script" path="res://scripts/day/day_settlement.gd" id="3_settle"]
+[ext_resource type="Script" path="res://scripts/world/booth.gd" id="4_booth"]
+[ext_resource type="Script" path="res://scripts/devices/generator.gd" id="5_gen"]
+[ext_resource type="Script" path="res://scripts/entities/player.gd" id="6_player"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="7_hud"]
+[ext_resource type="Script" path="res://scripts/ui/booth_mask.gd" id="8_mask"]
+[ext_resource type="Script" path="res://scripts/entities/monkey.gd" id="9_monkey"]
+[ext_resource type="Script" path="res://scripts/entities/monkey_states/sneaking.gd" id="10_sneak"]
+[ext_resource type="Script" path="res://scripts/entities/monkey_states/tampering.gd" id="11_tamper"]
+[ext_resource type="Script" path="res://scripts/entities/monkey_states/fleeing.gd" id="12_flee"]
+[ext_resource type="Script" path="res://scripts/ui/generator_panel.gd" id="13_genpanel"]
+
+[sub_resource type="RectangleShape2D" id="Rect_booth"]
+size = Vector2(160, 120)
+
+[sub_resource type="RectangleShape2D" id="Rect_gen"]
+size = Vector2(48, 48)
+
+[sub_resource type="RectangleShape2D" id="Rect_player"]
+size = Vector2(32, 32)
+
+[node name="Main" type="Node2D"]
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="Floor" type="ColorRect" parent="Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.13, 0.14, 0.16, 1)
+
+[node name="DayManager" type="Node" parent="."]
+script = ExtResource("1_fsm")
+
+[node name="Working" type="Node" parent="DayManager"]
+script = ExtResource("2_work")
+
+[node name="Settlement" type="Node" parent="DayManager"]
+script = ExtResource("3_settle")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Booth" type="Area2D" parent="World"]
+position = Vector2(-220, 0)
+script = ExtResource("4_booth")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Booth"]
+shape = SubResource("Rect_booth")
+
+[node name="Generator" type="Area2D" parent="World"]
+position = Vector2(260, -40)
+script = ExtResource("5_gen")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Generator"]
+shape = SubResource("Rect_gen")
+
+[node name="Player" type="CharacterBody2D" parent="World"]
+script = ExtResource("6_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Player"]
+shape = SubResource("Rect_player")
+
+[node name="Camera2D" type="Camera2D" parent="World/Player"]
+
+[node name="Monkey" type="Node2D" parent="World"]
+position = Vector2(560, -200)
+script = ExtResource("9_monkey")
+
+[node name="Audio" type="AudioStreamPlayer2D" parent="World/Monkey"]
+max_distance = 900.0
+bus = &"Master"
+
+[node name="StateMachine" type="Node" parent="World/Monkey"]
+script = ExtResource("1_fsm")
+
+[node name="Sneaking" type="Node" parent="World/Monkey/StateMachine"]
+script = ExtResource("10_sneak")
+
+[node name="Tampering" type="Node" parent="World/Monkey/StateMachine"]
+script = ExtResource("11_tamper")
+
+[node name="Fleeing" type="Node" parent="World/Monkey/StateMachine"]
+script = ExtResource("12_flee")
+
+[node name="BoothMask" type="CanvasLayer" parent="."]
+layer = 1
+script = ExtResource("8_mask")
+
+[node name="Cover" type="ColorRect" parent="BoothMask"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.02, 0.02, 0.03, 1)
+
+[node name="HintLabel" type="Label" parent="BoothMask"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "亭内 · 抽烟中
+（看不见外面，仔细听）"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 2
+script = ExtResource("7_hud")
+
+[node name="SmokeBar" type="ProgressBar" parent="HUD"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 320.0
+offset_bottom = 44.0
+max_value = 100.0
+
+[node name="StatusLabel" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 56.0
+offset_right = 460.0
+offset_bottom = 280.0
+
+[node name="SettlementPanel" type="Panel" parent="HUD"]
+offset_left = 340.0
+offset_top = 150.0
+offset_right = 780.0
+offset_bottom = 440.0
+
+[node name="Label" type="Label" parent="HUD/SettlementPanel"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 416.0
+offset_bottom = 266.0
+
+[node name="GenPanelLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="GeneratorPanel" type="Control" parent="GenPanelLayer"]
+script = ExtResource("13_genpanel")
