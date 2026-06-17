@@ -8,7 +8,8 @@ const BASE_WAGE: int = 100  # 每天基础工资
 const BANKRUPT_LINE: int = 0  # 预计存款低于此值即破产（对应文档"工资为负"的累计语义）
 const MAX_MONKEYS: int = 3  # 同时在场猴子数上限（2 设备下 2-3 只即"顾此失彼"，再多无目标可抢只糊声音）
 
-# ---------- 装备（数据驱动；加装备只往表加一行。纯内存，int id 天然兼容存档，但本步不写文件）----------
+# ---------- 装备（数据驱动；加装备只往表加一行）----------
+# ⚠ 装备 id 已入存档(Savegame.equipments)：一经发布只增不改不复用，否则旧档静默错位。
 const EQUIP_SKATES := 1  # 轮滑鞋
 const EQUIP_ALARM := 2  # 警报器
 const EQUIP_LOCK := 3  # 加固锁
@@ -37,7 +38,43 @@ var owned_equipment: Array[int] = []  # 已购装备 id；跨天保留(reset_day
 
 func _ready() -> void:
 	_setup_input()
-	Savegame.inti_save()
+	Savegame.inti_save()  # 队友：创建/加载存档，设 Savegame.current
+	load_from_save()  # 把存档回灌到运行时状态
+	Config.initialize(get_tree())  # 队友：加载并应用配置(音量)
+
+
+# ---------- 存档接线（适配队友 Savegame：now_day↔day / money / equipments↔owned_equipment）----------
+## 从存档回灌运行时状态（启动时调）。过滤 EQUIPMENT 表里不存在的装备 id（防旧档/改表后加载崩）。
+func load_from_save() -> void:
+	var s := Savegame.current
+	if s == null:
+		return
+	day = s.now_day
+	money = s.money
+	owned_equipment.clear()
+	for id: int in s.equipments:
+		if EQUIPMENT.has(id):  # 健壮性：跳过未知 id
+			owned_equipment.append(id)
+
+
+## 把运行时进度写回存档并落盘（推进天 / 买装备后调）。
+func sync_to_save() -> void:
+	var s := Savegame.current
+	if s == null:
+		return
+	s.now_day = day
+	s.money = money
+	s.equipments = owned_equipment.duplicate()  # duplicate 防别名共享
+	s.save_to_file()
+
+
+## 开新游戏：删旧档、建新默认档、运行时状态归零（菜单"新游戏"调，之后切到主场景）。
+func reset_new_game() -> void:
+	if Savegame.current:
+		Savegame.current.delete()  # 删旧档文件
+	Savegame.inti_save()  # 文件已删 → 建新默认档并设 current
+	load_from_save()  # 回灌默认值(day=1/money=0/equipments=[])到运行时
+	reset_day()  # 清局内瞬态(smoke/loss/repair)
 
 
 func reset_day() -> void:
@@ -93,6 +130,7 @@ func buy_equipment(id: int) -> bool:
 		return false
 	money -= int(EQUIPMENT[id]["price"])
 	owned_equipment.append(id)
+	sync_to_save()  # 买装备即落盘
 	return true
 
 
@@ -122,6 +160,7 @@ func monkey_count_today() -> int:
 func settle_and_advance(earned: int) -> void:
 	money += earned
 	day += 1
+	sync_to_save()  # 通关推进即落盘
 
 
 # ---------- 启动时注册键位（避免手改 project.godot 的 InputMap） ----------
