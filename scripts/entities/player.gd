@@ -13,7 +13,7 @@ func _ready() -> void:
 
 func _physics_process(_delta: float) -> void:
 	var dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = dir * speed
+	velocity = dir * speed * Game.equip_speed_mult()  # 轮滑鞋加成
 	move_and_slide()
 
 

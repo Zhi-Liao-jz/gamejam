@@ -47,6 +47,7 @@ func _apply_day_scaling() -> void:
 	spawn_interval = maxf(2.5, base_spawn_interval - 0.6 * (d - 1))
 	# 越来越大胆，但封底须 > player.interact_range(70)，否则"走近就吓跑/扑空"机制失效
 	flee_trigger = maxf(75.0, base_flee_trigger - 5.0 * (d - 1))
+	tamper_delay += Game.equip_tamper_bonus()  # 加固锁拉宽救火窗口（加法，在封底之后）
 
 
 ## 选一个 NORMAL 设备当目标；无可篡改设备返回 null。只依赖统一接口，以后多设备零改动。
