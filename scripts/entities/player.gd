@@ -21,7 +21,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		var d := _nearest_device()
 		if d:
-			d.repair()
+			d.interact()
 
 
 func _nearest_device() -> BaseDevice:

@@ -76,6 +76,12 @@ func repair() -> void:
 	_set_state(DeviceState.NORMAL)
 
 
+## 玩家靠近交互：默认 = 一键修复；子类可重写（如发电机改成打开调参面板）。
+## 这是加设备时的扩展点 —— player 调 interact() 多态分发，无需类型判断。
+func interact() -> void:
+	repair()
+
+
 func state_text() -> String:
 	match state:
 		DeviceState.NORMAL:
