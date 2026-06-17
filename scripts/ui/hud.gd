@@ -30,6 +30,15 @@ func _build_status() -> String:
 		var dev := node as BaseDevice
 		if dev:
 			lines.append("%s：%s" % [dev.device_name, dev.state_text()])
+	# 警报器：亭内黑屏时把"哪台出事 + 致命倒计时"显式列出来（未拥有则只能靠声音）
+	if Game.has_equipment(Game.EQUIP_ALARM):
+		for node: Node in get_tree().get_nodes_in_group("devices"):
+			var dev := node as BaseDevice
+			if dev and dev.state != BaseDevice.DeviceState.NORMAL:
+				var warn := "⚠ %s · %s" % [dev.device_name, dev.state_text()]
+				if dev.state == BaseDevice.DeviceState.SEVERE:
+					warn += " 致命 %.1fs" % dev.severe_remaining()
+				lines.append(warn)
 	return "\n".join(lines)
 
 
@@ -37,7 +46,8 @@ func _on_show_settlement(data: Dictionary) -> void:
 	settlement.visible = true
 	var outcome: String = data.get("outcome", "win_day")
 	var header := ""
-	var footer := "[N] 进入下一天      [R] 重试当天"
+	var footer := "[N] 进商店 → 下一天      [R] 重试当天"
+	var rating_line := ""
 	match outcome:
 		"fail_fatal":
 			header = "⚠ 设备彻底损坏 · 当天作废\n\n"
@@ -45,11 +55,13 @@ func _on_show_settlement(data: Dictionary) -> void:
 		"fail_bankrupt":
 			header = "⚠ 资不抵债 · 破产\n\n"
 			footer = "[R] 重试当天"
+		_:
+			rating_line = "\n评价：%s" % data.get("rating", "")
 	settlement_label.text = (
 		header
 		+ (
-			"今日结算\n\n基础工资：$%d\n维修费：-$%d\n设备损失：-$%d\n--------------------\n当天收入：$%d\n\n%s"
-			% [data["base"], data["repair"], data["loss"], data["wage"], footer]
+			"今日结算\n\n基础工资：$%d\n维修费：-$%d\n设备损失：-$%d\n--------------------\n当天收入：$%d%s\n\n%s"
+			% [data["base"], data["repair"], data["loss"], data["wage"], rating_line, footer]
 		)
 	)
 
