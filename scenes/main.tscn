@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="1_fsm"]
 [ext_resource type="Script" path="res://scripts/day/day_working.gd" id="2_work"]
@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://scripts/entities/monkey_states/tampering.gd" id="11_tamper"]
 [ext_resource type="Script" path="res://scripts/entities/monkey_states/fleeing.gd" id="12_flee"]
 [ext_resource type="Script" path="res://scripts/ui/generator_panel.gd" id="13_genpanel"]
+[ext_resource type="Script" path="res://scripts/devices/junction_box.gd" id="14_jbox"]
+[ext_resource type="Script" path="res://scripts/ui/junction_panel.gd" id="15_jboxpanel"]
 
 [sub_resource type="RectangleShape2D" id="Rect_booth"]
 size = Vector2(160, 120)
@@ -57,6 +59,13 @@ position = Vector2(260, -40)
 script = ExtResource("5_gen")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/Generator"]
+shape = SubResource("Rect_gen")
+
+[node name="JunctionBox" type="Area2D" parent="World"]
+position = Vector2(-120, -160)
+script = ExtResource("14_jbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/JunctionBox"]
 shape = SubResource("Rect_gen")
 
 [node name="Player" type="CharacterBody2D" parent="World"]
@@ -140,3 +149,9 @@ layer = 3
 
 [node name="GeneratorPanel" type="Control" parent="GenPanelLayer"]
 script = ExtResource("13_genpanel")
+
+[node name="JBoxPanelLayer" type="CanvasLayer" parent="."]
+layer = 4
+
+[node name="JunctionPanel" type="Control" parent="JBoxPanelLayer"]
+script = ExtResource("15_jboxpanel")

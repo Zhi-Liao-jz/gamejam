@@ -35,9 +35,22 @@ func _build_status() -> String:
 
 func _on_show_settlement(data: Dictionary) -> void:
 	settlement.visible = true
+	var outcome: String = data.get("outcome", "win_day")
+	var header := ""
+	var footer := "[N] 进入下一天      [R] 重试当天"
+	match outcome:
+		"fail_fatal":
+			header = "⚠ 设备彻底损坏 · 当天作废\n\n"
+			footer = "[R] 重试当天"
+		"fail_bankrupt":
+			header = "⚠ 资不抵债 · 破产\n\n"
+			footer = "[R] 重试当天"
 	settlement_label.text = (
-		"今日结算\n\n基础工资：$%d\n维修费：-$%d\n设备损失：-$%d\n--------------------\n当天收入：$%d\n\n[N] 进入下一天      [R] 重试当天"
-		% [data["base"], data["repair"], data["loss"], data["wage"]]
+		header
+		+ (
+			"今日结算\n\n基础工资：$%d\n维修费：-$%d\n设备损失：-$%d\n--------------------\n当天收入：$%d\n\n%s"
+			% [data["base"], data["repair"], data["loss"], data["wage"], footer]
+		)
 	)
 
 
