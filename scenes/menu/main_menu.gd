@@ -1,7 +1,6 @@
 extends Node
 
-@onready var continue_button: Button = %continue_button
-@onready var new_game_button: Button = %new_game_button
+@onready var play_button: Button = %play_button
 @onready var options_button: Button = %options_button
 @onready var quit_button: Button = %quit_button
 
@@ -9,10 +8,15 @@ extends Node
 @onready var options_panel: PanelContainer = %options_panel
 
 func _ready() -> void:
+	play_button.pressed.connect(play)
+	
 	options_button.pressed.connect(show_sub_panel.bind(options_panel))
 	options_panel.done.connect(show_sub_panel.bind(main_menu_panel))
+	
+	quit_button.pressed.connect(quit)
 
-
+func play() -> void:
+	pass
 func show_sub_panel(panel):
 	for p in [main_menu_panel,options_panel]:
 		if p == panel:

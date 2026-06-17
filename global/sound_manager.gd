@@ -15,14 +15,17 @@ const SOUNDS: Dictionary = {
 }
 
 func _ready() -> void :
+	AudioServer.add_bus(1)
 	for i in MAX_PLAYERS:
 		var p = AudioStreamPlayer.new()
-		p.bus = "Master"
+		p.bus = AudioServer.get_bus_name(1)
 		p.volume_db = linear_to_db(SFX_VOLUME)
 		add_child(p)
 		_pool.append(p)
 	print("SoundManager ready, pool: ", _pool.size())
 
+static func volume_effects(volume_db):
+	AudioServer.set_bus_volume_db(1, volume_db)
 
 func _is_on_cooldown(sound_key: String) -> bool:
 	if "dialogue" in sound_key: return false
