@@ -4,7 +4,6 @@ const MAX_PLAYERS: int = 16
 const SFX_VOLUME: float = 1.0
 const PITCH_VARIANCE: float = 0.08
 const OVERLAP_COOLDOWN_MSEC: int = 200
-const SOUNDS: Dictionary = {}
 
 var _pool: Array[AudioStreamPlayer] = []
 var _pool_index: int = 0
@@ -15,15 +14,13 @@ const SOUNDS: Dictionary = {
 	"boop": "res://assets/sound/boop.ogg"
 }
 
-func _ready() -> void :
-	AudioServer.add_bus(1)
 # 运行时程序化合成的占位音（Demo 阶段，无需素材文件）。
 # 取流时优先查这里，没有再回退到 SOUNDS 里的素材路径。
 # 第 2 步用：以后接真音频素材时把对应 key 填进 SOUNDS 即可，调用方不用改。
 var _streams: Dictionary = {}
 
-
 func _ready() -> void:
+	AudioServer.add_bus(1)
 	for i in MAX_PLAYERS:
 		var p = AudioStreamPlayer.new()
 		p.bus = AudioServer.get_bus_name(1)
@@ -32,6 +29,7 @@ func _ready() -> void:
 		_pool.append(p)
 	_build_placeholder_streams()
 	print("SoundManager ready, pool: ", _pool.size())
+
 
 static func volume_effects(volume_db):
 	AudioServer.set_bus_volume_db(1, volume_db)
