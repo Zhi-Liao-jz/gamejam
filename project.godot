@@ -17,8 +17,9 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-SoundManager="*uid://ca8wpucgsuvxa"
 EventBus="*uid://dafldy7q2ujh0"
+SoundManager="*uid://ca8wpucgsuvxa"
+Game="*res://global/game_state.gd"
 
 [display]
 

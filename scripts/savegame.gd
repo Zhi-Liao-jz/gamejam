@@ -13,6 +13,13 @@ static var current: Savegame = null
 
 const DEFAULT_PATH: = "user://savegames"
 
+static func inti_save():
+	if not DirAccess.dir_exists_absolute(DEFAULT_PATH):
+		DirAccess.make_dir_absolute(DEFAULT_PATH)
+	var new_savegame = load(DEFAULT_PATH + "/" + "wakuwaku" + ".tres")
+	if not new_savegame:
+		new_savegame = Savegame.new()
+	new_savegame.load()
 
 func end_level(level_playtime: float):
 	playtime += level_playtime
