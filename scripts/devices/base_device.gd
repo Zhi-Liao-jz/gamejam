@@ -5,11 +5,14 @@ extends Area2D
 
 enum DeviceState { NORMAL, TAMPERED, FAULT, SEVERE }  # 正常 / 被篡改 / 故障 / 严重故障
 
+const FATAL_SECS := 6.0  # 严重故障(SEVERE)持续超此秒数 = 致命(设备彻底损坏)
+
 @export var device_name: String = "设备"
 @export var repair_fee: int = 10  # 每次修复的费用
 @export var loss_per_second: int = 5  # 故障时每秒造成的损失
 
 var state: DeviceState = DeviceState.NORMAL
+var _severe_time: float = 0.0  # SEVERE 持续时长，用于 is_fatal()
 
 # 设备自带的位置音频：用 Godot 内建 2D 音频，自动按距离衰减 + 左右声像。
 # 不走 SoundManager 的 _is_on_screen 过滤——亭内画面被遮、设备不在屏幕，但声音必须照常播放。
@@ -30,6 +33,8 @@ func _process(delta: float) -> void:
 	_device_process(delta)
 	if state == DeviceState.FAULT or state == DeviceState.SEVERE:
 		Game.add_loss(loss_per_second * delta)
+	if state == DeviceState.SEVERE:
+		_severe_time += delta
 
 
 # ---------- 子类重写点 ----------
@@ -82,6 +87,16 @@ func interact() -> void:
 	repair()
 
 
+## 是否已彻底损坏（致命）：仅严重故障(SEVERE)持续超 FATAL_SECS。普通设备到不了 SEVERE → 恒 false。
+func is_fatal() -> bool:
+	return state == DeviceState.SEVERE and _severe_time >= FATAL_SECS
+
+
+## 距致命还剩多少秒（供面板倒计时显示）。
+func severe_remaining() -> float:
+	return maxf(0.0, FATAL_SECS - _severe_time)
+
+
 func state_text() -> String:
 	match state:
 		DeviceState.NORMAL:
@@ -99,6 +114,8 @@ func _set_state(s: DeviceState) -> void:
 	if s == state:
 		return
 	var was_faulted := state == DeviceState.FAULT or state == DeviceState.SEVERE
+	if s != DeviceState.SEVERE:
+		_severe_time = 0.0  # 离开严重故障即清零，避免再次进入时残留累时提前致命
 	state = s
 	set_process(s != DeviceState.NORMAL)  # 仅异常态需要逐帧推进/累损
 	queue_redraw()  # 外观只依赖 state，状态变化时重绘一次即可

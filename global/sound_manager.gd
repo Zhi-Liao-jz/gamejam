@@ -47,6 +47,9 @@ func _build_placeholder_streams() -> void:
 	# 猴子声（第3步）——亭内只靠这些判断外面：脚步=预警，翻找=决策窗口
 	_streams["monkey_step"] = _make_tone(130.0, "square", 0.5, true, 0.22, 0.0, 4.0)
 	_streams["monkey_fiddle"] = _make_tone(420.0, "saw", 0.5, true, 0.28, 9.0)
+	# 接线盒声（第5a步）——音色明显区别于发电机，亭内能听出是哪个设备在响
+	_streams["jbox_tampered"] = _make_tone(330.0, "square", 0.5, true, 0.16, 7.0)  # 继电器嗡鸣
+	_streams["jbox_fault"] = _make_tone(160.0, "saw", 0.5, true, 0.45, 0.0, 8.0)  # 电火花/跳闸噼啪
 
 
 ## 合成一段 16-bit 单声道 PCM 音。loop=true 时按整数周期取样以保证无缝循环。

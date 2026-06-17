@@ -5,6 +5,7 @@ extends Node
 # ---------- 配置（先写死） ----------
 const DAY_LENGTH: float = 30.0  # 抽完一根烟需要的秒数（= 一天长度）
 const BASE_WAGE: int = 100  # 每天基础工资
+const BANKRUPT_LINE: int = 0  # 预计存款低于此值即破产（对应文档"工资为负"的累计语义）
 
 # ---------- 运行时状态 ----------
 var day: int = 1
@@ -37,6 +38,26 @@ func add_loss(v: float) -> void:
 
 func compute_wage() -> int:
 	return BASE_WAGE - today_repair_cost - int(today_loss)
+
+
+# ---------- 失败 / 通关判定（纯函数，集中在 Game）----------
+## 是否有设备彻底损坏（致命）—— 任一设备 is_fatal()。
+func has_fatal_fault() -> bool:
+	for node: Node in get_tree().get_nodes_in_group("devices"):
+		var dev := node as BaseDevice
+		if dev and dev.is_fatal():
+			return true
+	return false
+
+
+## 结算后的预计存款 = 当前存款 + 当天工资（工资含损失/维修费扣除）。
+func projected_money() -> int:
+	return money + compute_wage()
+
+
+## 是否资不抵债（破产）。
+func is_bankrupt() -> bool:
+	return projected_money() < BANKRUPT_LINE
 
 
 ## 结算入账并进入下一天（结算规则集中在 Game，状态机只负责转场）
