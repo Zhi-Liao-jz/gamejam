@@ -6,6 +6,7 @@ extends Node
 const DAY_LENGTH: float = 30.0  # 抽完一根烟需要的秒数（= 一天长度）
 const BASE_WAGE: int = 100  # 每天基础工资
 const BANKRUPT_LINE: int = 0  # 预计存款低于此值即破产（对应文档"工资为负"的累计语义）
+const MAX_MONKEYS: int = 3  # 同时在场猴子数上限（2 设备下 2-3 只即"顾此失彼"，再多无目标可抢只糊声音）
 
 # ---------- 装备（数据驱动；加装备只往表加一行。纯内存，int id 天然兼容存档，但本步不写文件）----------
 const EQUIP_SKATES := 1  # 轮滑鞋
@@ -110,6 +111,11 @@ func rate_wage(w: int) -> String:
 		if w >= int(r["min"]):
 			return String(r["title"])
 	return ""
+
+
+## 当天该有几只猴子（难度曲线：每 2 天 +1 只，封顶 MAX_MONKEYS）
+func monkey_count_today() -> int:
+	return clampi(1 + (day - 1) / 2, 1, MAX_MONKEYS)
 
 
 ## 结算入账并进入下一天（结算规则集中在 Game，状态机只负责转场）
