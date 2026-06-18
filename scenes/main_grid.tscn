@@ -1,0 +1,39 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/room_manager.gd" id="1_rm"]
+[ext_resource type="PackedScene" path="res://scenes/room.tscn" id="2_room"]
+[ext_resource type="Script" path="res://scripts/ui/grid_hud.gd" id="3_hud"]
+
+[node name="MainGrid" type="Node2D"]
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="Floor" type="ColorRect" parent="Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.08, 0.09, 0.11, 1)
+
+[node name="RoomManager" type="Node2D" parent="."]
+script = ExtResource("1_rm")
+room_scene = ExtResource("2_room")
+
+[node name="Camera2D" type="Camera2D" parent="RoomManager"]
+zoom = Vector2(2, 2)
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="GridHud" type="Control" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("3_hud")
+
+[node name="InfoLabel" type="Label" parent="UI/GridHud"]
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 560.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 18
