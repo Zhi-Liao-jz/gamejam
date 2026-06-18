@@ -1,8 +1,14 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/room_manager.gd" id="1_rm"]
 [ext_resource type="PackedScene" path="res://scenes/room.tscn" id="2_room"]
-[ext_resource type="Script" path="res://scripts/ui/grid_hud.gd" id="3_hud"]
+[ext_resource type="Script" path="res://scripts/world/product_exit.gd" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/product.tscn" id="4_product"]
+[ext_resource type="Script" path="res://scripts/entities/hand.gd" id="5_hand"]
+[ext_resource type="Script" path="res://scripts/ui/grid_hud.gd" id="6_hud"]
+[ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="7_fsm"]
+[ext_resource type="Script" path="res://scripts/day/grid_working.gd" id="8_work"]
+[ext_resource type="Script" path="res://scripts/day/grid_settlement.gd" id="9_settle"]
 
 [node name="MainGrid" type="Node2D"]
 
@@ -13,6 +19,7 @@ layer = -10
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 color = Color(0.08, 0.09, 0.11, 1)
 
 [node name="RoomManager" type="Node2D" parent="."]
@@ -22,6 +29,13 @@ room_scene = ExtResource("2_room")
 [node name="Camera2D" type="Camera2D" parent="RoomManager"]
 zoom = Vector2(2, 2)
 
+[node name="ProductExit" type="Node2D" parent="."]
+script = ExtResource("3_exit")
+product_scene = ExtResource("4_product")
+
+[node name="Hand" type="Node2D" parent="."]
+script = ExtResource("5_hand")
+
 [node name="UI" type="CanvasLayer" parent="."]
 layer = 2
 
@@ -29,11 +43,38 @@ layer = 2
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource("3_hud")
+mouse_filter = 2
+script = ExtResource("6_hud")
 
 [node name="InfoLabel" type="Label" parent="UI/GridHud"]
 offset_left = 20.0
 offset_top = 16.0
-offset_right = 560.0
-offset_bottom = 70.0
+offset_right = 640.0
+offset_bottom = 96.0
+mouse_filter = 2
 theme_override_font_sizes/font_size = 18
+
+[node name="SummaryPanel" type="Panel" parent="UI/GridHud"]
+offset_left = 340.0
+offset_top = 170.0
+offset_right = 760.0
+offset_bottom = 400.0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="UI/GridHud/SummaryPanel"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 396.0
+offset_bottom = 206.0
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DayManager" type="Node" parent="."]
+script = ExtResource("7_fsm")
+
+[node name="Working" type="Node" parent="DayManager"]
+script = ExtResource("8_work")
+
+[node name="Settlement" type="Node" parent="DayManager"]
+script = ExtResource("9_settle")

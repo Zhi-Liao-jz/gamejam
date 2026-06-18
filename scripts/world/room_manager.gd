@@ -11,14 +11,15 @@ const START_ROOM := 4  # 默认从中央房间（自爆开关）开始监控
 
 # 九宫格布局（数据化，不写死在逻辑里）。grid=(列,行)，行 0 在最上。
 # 数组下标即 room_id，且按行优先排列 → id == grid.y * 3 + grid.x。
-# 颜色仅占位，后续"每天随机交货点颜色"时改这张表即可。
+# color_key 仅交货点房间有（red/blue/green），用于产品颜色匹配；颜色后续可每天随机。
 const LAYOUT: Array[Dictionary] = [
 	{"grid": Vector2i(0, 0), "role": &"empty", "name": "左上 · 待定", "color": Color(0.42, 0.44, 0.48)},
 	{
 		"grid": Vector2i(1, 0),
 		"role": &"delivery",
 		"name": "上交货点 · 红",
-		"color": Color(0.86, 0.27, 0.24)
+		"color": Color(0.86, 0.27, 0.24),
+		"color_key": &"red",
 	},
 	{"grid": Vector2i(2, 0), "role": &"empty", "name": "右上 · 待定", "color": Color(0.42, 0.44, 0.48)},
 	{
@@ -31,26 +32,28 @@ const LAYOUT: Array[Dictionary] = [
 		"grid": Vector2i(1, 1),
 		"role": &"self_destruct",
 		"name": "中央自爆开关",
-		"color": Color(0.90, 0.20, 0.18)
+		"color": Color(0.90, 0.20, 0.18),
 	},
 	{
 		"grid": Vector2i(2, 1),
 		"role": &"delivery",
 		"name": "右交货点 · 蓝",
-		"color": Color(0.26, 0.50, 0.92)
+		"color": Color(0.26, 0.50, 0.92),
+		"color_key": &"blue",
 	},
 	{"grid": Vector2i(0, 2), "role": &"heater", "name": "加热台", "color": Color(0.92, 0.70, 0.24)},
 	{
 		"grid": Vector2i(1, 2),
 		"role": &"delivery",
 		"name": "下交货点 · 绿",
-		"color": Color(0.30, 0.74, 0.40)
+		"color": Color(0.30, 0.74, 0.40),
+		"color_key": &"green",
 	},
 	{
 		"grid": Vector2i(2, 2),
 		"role": &"power",
 		"name": "发电机 / 接线盒",
-		"color": Color(0.18, 0.62, 0.58)
+		"color": Color(0.18, 0.62, 0.58),
 	},
 ]
 
@@ -78,6 +81,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_step(Vector2i(-1, 0))
 	elif event.is_action_pressed("move_right"):
 		_step(Vector2i(1, 0))
+	else:
+		return
+	get_viewport().set_input_as_handled()  # 已处理的切房间按键不再向下传播
 
 
 ## 房间在世界里的中心坐标（供相机吸附 / 音效声像 / 猴子定位用）。
@@ -95,12 +101,43 @@ func neighbor_in_direction(room_id: int, dir: Vector2i) -> int:
 	return _room_id_at(grid)
 
 
+## 按 id 取房间节点；越界返回 null。
+func room_node(room_id: int) -> Room:
+	if room_id < 0 or room_id >= _rooms.size():
+		return null
+	return _rooms[room_id]
+
+
+## 当前监控房间节点。
+func current_room_node() -> Room:
+	return room_node(current_room)
+
+
+## 第一个指定用途的房间（如 product_exit）；没有返回 null。
+func find_room_by_role(role: StringName) -> Room:
+	for room: Room in _rooms:
+		if room.role == role:
+			return room
+	return null
+
+
+## 所有交货点房间。
+func delivery_rooms() -> Array[Room]:
+	var result: Array[Room] = []
+	for room: Room in _rooms:
+		if room.role == &"delivery":
+			result.append(room)
+	return result
+
+
 func _build_rooms() -> void:
 	for i: int in LAYOUT.size():
 		var data: Dictionary = LAYOUT[i]
 		var room: Room = room_scene.instantiate()
 		add_child(room)
-		room.setup(i, data["grid"], data["role"], data["name"], data["color"])
+		room.setup(
+			i, data["grid"], data["role"], data["name"], data["color"], data.get("color_key", &"")
+		)
 		room.position = room_world_center(i)
 		_rooms.append(room)
 
