@@ -8,6 +8,7 @@ const GRID_COLS := 3
 const GRID_ROWS := 3
 const CELL_GAP := 160.0  # 房间之间的世界间距（够大以保证非当前房间在视野外）
 const START_ROOM := 4  # 默认从中央房间（自爆开关）开始监控
+const PANEL_LOCAL := Vector2(150.0, -95.0)  # 控制面板在房间内的局部位置（右上，避开名字与产品）
 
 # 九宫格布局（数据化，不写死在逻辑里）。grid=(列,行)，行 0 在最上。
 # 数组下标即 room_id，且按行优先排列 → id == grid.y * 3 + grid.x。
@@ -67,6 +68,7 @@ var _rooms: Array[Room] = []
 
 func _ready() -> void:
 	_build_rooms()
+	_build_panels()
 	_snap_camera()
 	camera.make_current()
 	_broadcast_room_changed()
@@ -130,6 +132,38 @@ func delivery_rooms() -> Array[Room]:
 	return result
 
 
+## 所有带控制面板的房间（交货点 + 产品出口），供猴子选目标。
+func panel_rooms() -> Array[Room]:
+	var result: Array[Room] = []
+	for room: Room in _rooms:
+		if room.has_panel():
+			result.append(room)
+	return result
+
+
+## 房间图上从 from_id 到 to_id 的"第一步"房间 id（BFS）；不可达返回 -1。供猴子逐格寻路。
+func next_step_toward(from_id: int, to_id: int) -> int:
+	if from_id == to_id:
+		return from_id
+	var dirs := [Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0)]
+	var came_from := {from_id: from_id}
+	var queue: Array[int] = [from_id]
+	while not queue.is_empty():
+		var cur: int = queue.pop_front()
+		for dir: Vector2i in dirs:
+			var nb := neighbor_in_direction(cur, dir)
+			if nb == -1 or came_from.has(nb):
+				continue
+			came_from[nb] = cur
+			if nb == to_id:
+				var step := nb
+				while came_from[step] != from_id:
+					step = came_from[step]
+				return step
+			queue.append(nb)
+	return -1
+
+
 func _build_rooms() -> void:
 	for i: int in LAYOUT.size():
 		var data: Dictionary = LAYOUT[i]
@@ -140,6 +174,15 @@ func _build_rooms() -> void:
 		)
 		room.position = room_world_center(i)
 		_rooms.append(room)
+
+
+## 给交货点 + 产品出口房间各挂一个控制面板（代码创建，无需场景）。
+func _build_panels() -> void:
+	for room: Room in _rooms:
+		if room.role == &"delivery" or room.role == &"product_exit":
+			var panel := ControlPanel.new()
+			panel.setup(room.room_id, room.role)
+			room.attach_panel(panel, PANEL_LOCAL)
 
 
 func _step(dir: Vector2i) -> void:

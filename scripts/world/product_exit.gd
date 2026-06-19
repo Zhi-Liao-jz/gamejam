@@ -39,6 +39,8 @@ func _try_spawn() -> void:
 	var exit_room := room_manager.find_room_by_role(&"product_exit")
 	if exit_room == null:
 		return
+	if not exit_room.panel_open():
+		return  # 出口面板被猴子关闭 → 停止出货
 	var waiting := exit_room.products().size()
 	if waiting >= MAX_WAITING:
 		return

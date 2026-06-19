@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/grid_monkey.gd" id="1_monkey"]
+[ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="2_fsm"]
+[ext_resource type="Script" path="res://scripts/entities/grid_monkey_states/grid_sneaking.gd" id="3_sneak"]
+[ext_resource type="Script" path="res://scripts/entities/grid_monkey_states/grid_tampering.gd" id="4_tamper"]
+[ext_resource type="Script" path="res://scripts/entities/grid_monkey_states/grid_fleeing.gd" id="5_flee"]
+
+[node name="GridMonkey" type="Node2D"]
+script = ExtResource("1_monkey")
+
+[node name="Audio" type="AudioStreamPlayer2D" parent="."]
+max_distance = 900.0
+bus = &"Master"
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("2_fsm")
+
+[node name="GridSneaking" type="Node" parent="StateMachine"]
+script = ExtResource("3_sneak")
+
+[node name="GridTampering" type="Node" parent="StateMachine"]
+script = ExtResource("4_tamper")
+
+[node name="GridFleeing" type="Node" parent="StateMachine"]
+script = ExtResource("5_flee")

@@ -12,6 +12,7 @@ var role: StringName = &"empty"  # 房间用途：empty/delivery/product_exit/se
 var display_name: String = ""
 var accent := Color(0.5, 0.5, 0.5)  # 房间主题色（占位，后续随天数随机交货点颜色时从这里改）
 var color_key: StringName = &""  # 交货点房间的颜色键（red/blue/green）；非交货点为空
+var control_panel: ControlPanel = null  # 交货点 / 出口房间的控制面板；其它房间为空
 
 @onready var contents: Node2D = $Contents
 @onready var name_label: Label = $NameLabel
@@ -74,6 +75,34 @@ func add_product(product: Product, local_pos: Vector2) -> void:
 	product.position = local_pos
 	product.current_room = room_id
 	product.z_index = 1
+
+
+## 给房间挂一个控制面板（交货点 / 出口用），记录引用供门控与点击重开。
+func attach_panel(panel: ControlPanel, local_pos: Vector2) -> void:
+	add_child(panel)
+	panel.position = local_pos
+	control_panel = panel
+
+
+## 是否有控制面板。
+func has_panel() -> bool:
+	return control_panel != null and is_instance_valid(control_panel)
+
+
+## 面板是否允许工作（无面板视为常开）。出口出货 / 交货结算据此门控。
+func panel_open() -> bool:
+	return not has_panel() or control_panel.is_open
+
+
+## 世界坐标点命中的"可重开面板"（仅当面板关闭时返回，避免开着的面板挡住产品点击）；否则 null。
+func panel_at(world_pos: Vector2) -> ControlPanel:
+	if (
+		has_panel()
+		and not control_panel.is_open
+		and control_panel.global_rect().has_point(world_pos)
+	):
+		return control_panel
+	return null
 
 
 func _apply_visual() -> void:
