@@ -1,0 +1,18 @@
+extends BaseState
+## 2.0 当天失败（P3）：自爆未能阻止 → 本日作废、收入归零，按 [N] 重试本日（天数不变、不入账）。
+
+
+func enter(_msg: Dictionary = {}) -> void:
+	Ledger.working_active = false
+	var data := {
+		"day": Game.day,
+		"delivered": Ledger.delivered_today,
+		"quota": Ledger.quota_today(),
+	}
+	EventBus.push_event("day_failed", data)
+
+
+func update(_delta: float) -> void:
+	if Input.is_action_just_pressed("next_day"):
+		# 重试本日：转回 Working，其 enter 会 reset_day（清 day_failed/收入）+ work_started（复位面板/猴子/自爆）
+		fsm.transition_to(&"Working")

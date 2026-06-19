@@ -61,6 +61,8 @@ const LAYOUT: Array[Dictionary] = [
 @export var room_scene: PackedScene
 
 var current_room: int = START_ROOM
+var self_destruct: SelfDestruct = null  # 中央自爆开关（P3）；猴子破坏 / 玩家重置 / HUD 都用它
+
 var _rooms: Array[Room] = []
 
 @onready var camera: Camera2D = $Camera2D
@@ -69,6 +71,7 @@ var _rooms: Array[Room] = []
 func _ready() -> void:
 	_build_rooms()
 	_build_panels()
+	_build_self_destruct()
 	_snap_camera()
 	camera.make_current()
 	_broadcast_room_changed()
@@ -183,6 +186,18 @@ func _build_panels() -> void:
 			var panel := ControlPanel.new()
 			panel.setup(room.room_id, room.role)
 			room.attach_panel(panel, PANEL_LOCAL)
+
+
+## 给中央房间挂自爆开关（代码创建，无需场景）。
+func _build_self_destruct() -> void:
+	var room := find_room_by_role(&"self_destruct")
+	if room == null:
+		return
+	var device := SelfDestruct.new()
+	device.setup(room.room_id)
+	room.add_child(device)
+	device.position = Vector2.ZERO  # 房间中心
+	self_destruct = device
 
 
 func _step(dir: Vector2i) -> void:

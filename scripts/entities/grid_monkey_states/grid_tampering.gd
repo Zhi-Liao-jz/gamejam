@@ -14,8 +14,14 @@ func enter(_msg: Dictionary = {}) -> void:
 
 func physics_update(delta: float) -> void:
 	var room := monkey.room_manager.room_node(monkey.target_room)
-	# 目标没了 / 面板已被关 / 自己已不在目标房间 → 回潜入重选
-	if room == null or not room.panel_open() or monkey.current_room != monkey.target_room:
+	if room == null or monkey.current_room != monkey.target_room:
+		fsm.transition_to(&"GridSneaking")
+		return
+	if room.role == &"self_destruct":
+		_tamper_self_destruct(delta)
+		return
+	# 交货 / 出口面板：面板已被关 → 回潜入重选
+	if not room.panel_open():
 		fsm.transition_to(&"GridSneaking")
 		return
 	_t += delta
@@ -23,3 +29,18 @@ func physics_update(delta: float) -> void:
 		room.control_panel.close()
 		SoundManager.play("alarm")  # 一声全局警报：面板被关，提醒玩家去重开
 		fsm.transition_to(&"GridFleeing")
+
+
+## 破坏中央自爆开关：每 tamper_delay 推进一步（开罩→按钮），按下后逃跑。
+func _tamper_self_destruct(delta: float) -> void:
+	var sd: SelfDestruct = monkey.room_manager.self_destruct
+	if sd == null or not sd.is_attackable():
+		fsm.transition_to(&"GridSneaking")  # 已被按下 / 玩家正处理 → 换目标
+		return
+	_t += delta
+	if _t >= monkey.tamper_delay:
+		_t = 0.0
+		var armed := sd.sabotage_step()
+		SoundManager.play("alarm")  # 开罩 / 按下都报警一声
+		if armed:
+			fsm.transition_to(&"GridFleeing")
