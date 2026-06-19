@@ -48,8 +48,9 @@ func _try_spawn() -> void:
 	if targets.is_empty():
 		return
 	var target: Room = targets[randi() % targets.size()]
+	var raw := Game.day >= 4 and randf() < 0.4  # 第4天起约四成产品是生料，需先去加热台
 	var product: Product = product_scene.instantiate()
-	product.setup(target.color_key, target.accent, Ledger.PRODUCT_VALUE)
+	product.setup(target.color_key, target.accent, Ledger.PRODUCT_VALUE, raw)
 	exit_room.add_product(product, _slot_position(waiting))
 
 

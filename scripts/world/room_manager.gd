@@ -72,6 +72,7 @@ func _ready() -> void:
 	_build_rooms()
 	_build_panels()
 	_build_self_destruct()
+	_build_heater()
 	_snap_camera()
 	camera.make_current()
 	_broadcast_room_changed()
@@ -198,6 +199,16 @@ func _build_self_destruct() -> void:
 	room.add_child(device)
 	device.position = Vector2.ZERO  # 房间中心
 	self_destruct = device
+
+
+## 给加热台房间挂加热台（代码创建，无需场景）。
+func _build_heater() -> void:
+	var room := find_room_by_role(&"heater")
+	if room == null:
+		return
+	var heater := Heater.new()
+	room.add_child(heater)
+	heater.position = Vector2.ZERO
 
 
 func _step(dir: Vector2i) -> void:
