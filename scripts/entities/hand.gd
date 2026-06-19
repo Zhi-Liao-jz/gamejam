@@ -19,11 +19,39 @@ func _unhandled_input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
 	if click == null or click.button_index != MOUSE_BUTTON_LEFT or not click.pressed:
 		return
+	var pos := get_global_mouse_position()
+	# 点击优先级：赶猴子 > 重开面板 > 拿放产品（即便持有产品也能先赶猴 / 重开面板）
+	if _try_shoo_monkey(pos) or _try_open_panel(pos):
+		get_viewport().set_input_as_handled()
+		return
 	if _held:
 		_drop_or_deliver()
 	else:
 		_pick_up()
 	get_viewport().set_input_as_handled()  # 已处理的左键不再向下传播
+
+
+## 点掉当前监控房间里的猴子 → 驱赶；命中返回 true。
+func _try_shoo_monkey(world_pos: Vector2) -> bool:
+	var current := room_manager.current_room
+	for node: Node in get_tree().get_nodes_in_group("grid_monkeys"):
+		var monkey := node as GridMonkey
+		if monkey and monkey.current_room == current and monkey.global_rect().has_point(world_pos):
+			monkey.shoo()
+			return true
+	return false
+
+
+## 点击当前房间里"关闭的面板" → 重开；命中返回 true。
+func _try_open_panel(world_pos: Vector2) -> bool:
+	var room := room_manager.current_room_node()
+	if room == null:
+		return false
+	var panel := room.panel_at(world_pos)
+	if panel == null:
+		return false
+	panel.open()
+	return true
 
 
 func _pick_up() -> void:
@@ -46,6 +74,8 @@ func _drop_or_deliver() -> void:
 		return
 	if room.is_delivery():
 		if room.color_key == _held.color_key:
+			if not room.panel_open():
+				return  # 面板被猴子关闭：放上去也不结算，保持持有，先去点面板重开
 			Ledger.deliver(_held.value)
 			SoundManager.play("boop")
 			_held.queue_free()

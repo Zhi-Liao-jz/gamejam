@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/room_manager.gd" id="1_rm"]
 [ext_resource type="PackedScene" path="res://scenes/room.tscn" id="2_room"]
@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="7_fsm"]
 [ext_resource type="Script" path="res://scripts/day/grid_working.gd" id="8_work"]
 [ext_resource type="Script" path="res://scripts/day/grid_settlement.gd" id="9_settle"]
+[ext_resource type="Script" path="res://scripts/entities/grid_monkey_spawner.gd" id="10_mspawn"]
+[ext_resource type="PackedScene" path="res://scenes/grid_monkey.tscn" id="11_monkey"]
 
 [node name="MainGrid" type="Node2D"]
 
@@ -32,6 +34,10 @@ zoom = Vector2(2, 2)
 [node name="ProductExit" type="Node2D" parent="."]
 script = ExtResource("3_exit")
 product_scene = ExtResource("4_product")
+
+[node name="GridMonkeySpawner" type="Node2D" parent="."]
+script = ExtResource("10_mspawn")
+monkey_scene = ExtResource("11_monkey")
 
 [node name="Hand" type="Node2D" parent="."]
 script = ExtResource("5_hand")
