@@ -183,7 +183,7 @@ func _build_rooms() -> void:
 ## 给交货点 + 产品出口房间各挂一个控制面板（代码创建，无需场景）。
 func _build_panels() -> void:
 	for room: Room in _rooms:
-		if room.role == &"delivery" or room.role == &"product_exit":
+		if room.role == &"delivery" or room.role == &"product_exit" or room.role == &"heater":
 			var panel := ControlPanel.new()
 			panel.setup(room.room_id, room.role)
 			room.attach_panel(panel, PANEL_LOCAL)
