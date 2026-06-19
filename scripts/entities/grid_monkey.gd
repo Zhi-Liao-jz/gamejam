@@ -48,6 +48,8 @@ func pick_target() -> int:
 		return -1
 	var candidates: Array[int] = []
 	for room: Room in room_manager.panel_rooms():
+		if room.role == &"heater" and Game.day < 5:
+			continue  # 加热台第5天起才成为猴子目标
 		if room.panel_open():
 			candidates.append(room.room_id)
 	# 第3天起把中央自爆开关纳入目标（最高威胁）；仅当它还能被破坏时

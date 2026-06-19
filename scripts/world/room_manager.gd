@@ -72,6 +72,7 @@ func _ready() -> void:
 	_build_rooms()
 	_build_panels()
 	_build_self_destruct()
+	_build_heater()
 	_snap_camera()
 	camera.make_current()
 	_broadcast_room_changed()
@@ -182,7 +183,7 @@ func _build_rooms() -> void:
 ## 给交货点 + 产品出口房间各挂一个控制面板（代码创建，无需场景）。
 func _build_panels() -> void:
 	for room: Room in _rooms:
-		if room.role == &"delivery" or room.role == &"product_exit":
+		if room.role == &"delivery" or room.role == &"product_exit" or room.role == &"heater":
 			var panel := ControlPanel.new()
 			panel.setup(room.room_id, room.role)
 			room.attach_panel(panel, PANEL_LOCAL)
@@ -198,6 +199,16 @@ func _build_self_destruct() -> void:
 	room.add_child(device)
 	device.position = Vector2.ZERO  # 房间中心
 	self_destruct = device
+
+
+## 给加热台房间挂加热台（代码创建，无需场景）。
+func _build_heater() -> void:
+	var room := find_room_by_role(&"heater")
+	if room == null:
+		return
+	var heater := Heater.new()
+	room.add_child(heater)
+	heater.position = Vector2.ZERO
 
 
 func _step(dir: Vector2i) -> void:

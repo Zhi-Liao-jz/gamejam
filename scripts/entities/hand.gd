@@ -76,7 +76,7 @@ func _pick_up() -> void:
 	product.global_position = get_global_mouse_position()
 	product.z_index = 100
 	_held = product
-	EventBus.push_event("hand_changed", [true, _color_name(product.color_key)])
+	EventBus.push_event("hand_changed", [true, _held_label(product)])
 
 
 func _drop_or_deliver() -> void:
@@ -87,6 +87,8 @@ func _drop_or_deliver() -> void:
 		if room.color_key == _held.color_key:
 			if not room.panel_open():
 				return  # 面板被猴子关闭：放上去也不结算，保持持有，先去点面板重开
+			if not _held.is_deliverable():
+				return  # 生料需先去加热台 / 已烧焦报废：不结算，保持持有
 			Ledger.deliver(_held.value)
 			SoundManager.play("boop")
 			_held.queue_free()
@@ -113,3 +115,15 @@ func _color_name(key: StringName) -> String:
 			return "绿色产品"
 		_:
 			return "产品"
+
+
+## 手持标签带加工状态：生料 / 已熟 / 焦（供 HUD 提示是否要先去加热）。
+func _held_label(product: Product) -> String:
+	var base := _color_name(product.color_key)
+	if product.burned:
+		return base + "·焦"
+	if product.requires_heat and not product.heated:
+		return base + "·生"
+	if product.heated:
+		return base + "·熟"
+	return base
