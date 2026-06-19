@@ -13,6 +13,7 @@ const PITCH_BY_INDEX := [1.0, 0.92, 1.08]  # 多猴音高错开防糊
 func _ready() -> void:
 	EventBus.subscribe("work_started", _on_work_started)
 	EventBus.subscribe("day_summary", _on_day_summary)
+	EventBus.subscribe("day_failed", _on_day_summary)  # 当天失败也清场（复用清空逻辑）
 
 
 func _on_work_started() -> void:

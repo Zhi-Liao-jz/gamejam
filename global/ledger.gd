@@ -9,6 +9,7 @@ const QUOTA_PER_DAY: int = 2  # 之后每天目标递增
 var delivered_today: int = 0  # 当天已交货数量
 var income_today: int = 0  # 当天交货累计收入（结算时入账）
 var working_active: bool = false  # 当前是否"工作中"阶段（产品出口 / 拿放据此启停）
+var day_failed: bool = false  # 当天是否已失败（自爆引爆触发；DayManager 据此转 Failed）
 
 
 ## 当天交货目标（难度曲线：每天 +QUOTA_PER_DAY）。
@@ -27,10 +28,11 @@ func deliver(value: int) -> void:
 	income_today += value
 
 
-## 进入新一天前重置当天计数。
+## 进入新一天（或重试本日）前重置当天计数与失败标志。
 func reset_day() -> void:
 	delivered_today = 0
 	income_today = 0
+	day_failed = false
 
 
 ## 当天结算：交货收入入 Game 账、推进天数、落盘。

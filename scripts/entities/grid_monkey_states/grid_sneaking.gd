@@ -21,7 +21,12 @@ func physics_update(delta: float) -> void:
 		fsm.transition_to(&"GridTampering")
 
 
-## 目标仍可捣乱：房间存在且面板还开着（已被关则换目标）。
+## 目标仍可捣乱：自爆开关看 is_attackable，面板房间看 panel_open（已被关则换目标）。
 func _target_valid() -> bool:
 	var room := monkey.room_manager.room_node(monkey.target_room)
-	return room != null and room.panel_open()
+	if room == null:
+		return false
+	if room.role == &"self_destruct":
+		var sd: SelfDestruct = monkey.room_manager.self_destruct
+		return sd != null and sd.is_attackable()
+	return room.panel_open()

@@ -20,8 +20,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if click == null or click.button_index != MOUSE_BUTTON_LEFT or not click.pressed:
 		return
 	var pos := get_global_mouse_position()
-	# 点击优先级：赶猴子 > 重开面板 > 拿放产品（即便持有产品也能先赶猴 / 重开面板）
-	if _try_shoo_monkey(pos) or _try_open_panel(pos):
+	# 点击优先级：赶猴子 > 重开面板 > 重置自爆 > 拿放产品（持有产品时也能先处理威胁）
+	if _try_shoo_monkey(pos) or _try_open_panel(pos) or _try_reset_self_destruct(pos):
 		get_viewport().set_input_as_handled()
 		return
 	if _held:
@@ -51,6 +51,17 @@ func _try_open_panel(world_pos: Vector2) -> bool:
 	if panel == null:
 		return false
 	panel.open()
+	return true
+
+
+## 在中央房间点击自爆开关（罩被开 / 倒计时中）→ 重置；命中返回 true。
+func _try_reset_self_destruct(world_pos: Vector2) -> bool:
+	var sd := room_manager.self_destruct
+	if sd == null or room_manager.current_room != sd.room_id:
+		return false
+	if not sd.is_resettable() or not sd.global_rect().has_point(world_pos):
+		return false
+	sd.player_reset()
 	return true
 
 

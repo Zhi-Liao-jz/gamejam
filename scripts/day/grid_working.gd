@@ -12,5 +12,7 @@ func enter(_msg: Dictionary = {}) -> void:
 
 
 func update(_delta: float) -> void:
-	if Ledger.is_quota_met():
+	if Ledger.day_failed:
+		fsm.transition_to(&"Failed")  # 自爆引爆 → 当天失败（优先于结算）
+	elif Ledger.is_quota_met():
 		fsm.transition_to(&"Settlement")

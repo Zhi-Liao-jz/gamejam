@@ -50,6 +50,10 @@ func pick_target() -> int:
 	for room: Room in room_manager.panel_rooms():
 		if room.panel_open():
 			candidates.append(room.room_id)
+	# 第3天起把中央自爆开关纳入目标（最高威胁）；仅当它还能被破坏时
+	var sd := room_manager.self_destruct
+	if sd != null and Game.day >= 3 and sd.is_attackable():
+		candidates.append(sd.room_id)
 	if candidates.is_empty():
 		return -1
 	var taken := {}
