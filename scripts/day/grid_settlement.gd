@@ -8,7 +8,8 @@ func enter(_msg: Dictionary = {}) -> void:
 		"day": Game.day,
 		"delivered": Ledger.delivered_today,
 		"quota": Ledger.quota_today(),
-		"income": Ledger.income_today,
+		"profit": Ledger.profit_today,
+		"combo": Ledger.combo_count,
 	}
 	EventBus.push_event("day_summary", data)
 

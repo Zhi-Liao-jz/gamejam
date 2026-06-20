@@ -119,15 +119,17 @@ func _refresh_info() -> void:
 		warn += "\n⚡ 停电！产品出口 / 加热台停摆，切到右下修复"
 	info_label.text = (
 		(
-			"第 %d 天    存款 $%d\n交货 %d / %d    今日收入 $%d\n监控中：%s    手持：%s\n"
+			"第 %d 天    剩余 %s    存款 $%d\n今日利润 $%d    交货 %d / %d    连击 %d\n监控中：%s    手持：%s\n"
 			+ "[WASD] 切监控    [左键] 拿放 / 重开面板 / 赶猴%s"
 		)
 		% [
 			Game.day,
+			_format_time(Ledger.time_left),
 			Game.money,
+			Ledger.profit_today,
 			Ledger.delivered_today,
 			Ledger.quota_today(),
-			Ledger.income_today,
+			Ledger.combo_count,
 			room_name,
 			_held_text,
 			warn,
@@ -154,8 +156,8 @@ func _on_panel_changed(room_id: int, is_open: bool) -> void:
 func _on_day_summary(data: Dictionary) -> void:
 	summary_panel.visible = true
 	summary_label.text = (
-		"第 %d 天 完成！\n\n交货 %d / %d\n今日收入 $%d\n\n[N] 进入下一天"
-		% [data["day"], data["delivered"], data["quota"], data["income"]]
+		"第 %d 天 完成！\n\n交货 %d / %d\n当前连击 %d\n今日利润 $%d\n\n[N] 进入下一天"
+		% [data["day"], data["delivered"], data["quota"], data["combo"], data["profit"]]
 	)
 
 
@@ -169,3 +171,10 @@ func _on_day_failed(data: Dictionary) -> void:
 		"💥 第 %d 天 失败！\n\n自爆未能阻止\n交货 %d / %d\n\n[N] 重试本日"
 		% [data["day"], data["delivered"], data["quota"]]
 	)
+
+
+func _format_time(seconds: float) -> String:
+	var total := maxi(0, int(ceil(seconds)))
+	var minutes := total / 60
+	var secs := total % 60
+	return "%02d:%02d" % [minutes, secs]
