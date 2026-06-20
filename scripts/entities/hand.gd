@@ -3,6 +3,9 @@ extends Node2D
 ## 玩家的手：点击拿起 / 放下产品，跨房间携带。
 ## 九宫格玩法没有走动的角色，"手" = 光标 + 当前持有物（持有时跟随鼠标）。
 
+const SELECT_SHOCK_TRAP_ACTION: StringName = &"select_shock_trap"
+const SELECT_NET_ACTION: StringName = &"select_net"
+
 var _held: Product = null
 
 @onready var room_manager := get_node("../RoomManager") as RoomManager
@@ -21,10 +24,16 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not Ledger.working_active:
 		return
+	if _try_select_equipment(event):
+		get_viewport().set_input_as_handled()
+		return
 	var click := event as InputEventMouseButton
 	if click == null or click.button_index != MOUSE_BUTTON_LEFT or not click.pressed:
 		return
 	var pos := get_global_mouse_position()
+	if _try_use_selected_equipment(pos):
+		get_viewport().set_input_as_handled()
+		return
 	# 点击优先级：赶猴子 > 重开面板 > 出口按钮 > 重置自爆 > 修发电机 > 拿放产品
 	if (
 		_try_shoo_monkey(pos)
@@ -42,14 +51,59 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()  # 已处理的左键不再向下传播
 
 
+func _try_select_equipment(event: InputEvent) -> bool:
+	if event.is_action_pressed(SELECT_SHOCK_TRAP_ACTION):
+		return Game.toggle_equipment(Game.EQUIPMENT_SHOCK_TRAP)
+	if event.is_action_pressed(SELECT_NET_ACTION):
+		return Game.toggle_equipment(Game.EQUIPMENT_NET)
+	return false
+
+
+func _try_use_selected_equipment(world_pos: Vector2) -> bool:
+	match Game.selected_equipment:
+		Game.EQUIPMENT_SHOCK_TRAP:
+			return _try_install_shock_trap(world_pos)
+		Game.EQUIPMENT_NET:
+			return _try_capture_monkey(world_pos)
+		_:
+			return false
+
+
+## 选中电击陷阱后，点击当前房间任意猴子可交互设备安装。
+func _try_install_shock_trap(world_pos: Vector2) -> bool:
+	var device := _device_at_current_room(world_pos)
+	if device == null:
+		return false
+	if not device.can_install_shock_trap():
+		return false
+	if not Game.consume_equipment(Game.EQUIPMENT_SHOCK_TRAP):
+		return false
+	if not device.install_shock_trap():
+		return false
+	Game.select_equipment(Game.EQUIPMENT_NONE)
+	SoundManager.play("boop")
+	return true
+
+
+## 选中捕网后，点击当前房间猴子，使其暂停行动。
+func _try_capture_monkey(world_pos: Vector2) -> bool:
+	var monkey := _monkey_at_current_room(world_pos)
+	if monkey == null:
+		return false
+	if not Game.consume_equipment(Game.EQUIPMENT_NET):
+		return false
+	monkey.capture(Game.equipment_effect_duration(Game.EQUIPMENT_NET))
+	Game.select_equipment(Game.EQUIPMENT_NONE)
+	SoundManager.play("boop")
+	return true
+
+
 ## 点掉当前监控房间里的猴子 → 驱赶；命中返回 true。
 func _try_shoo_monkey(world_pos: Vector2) -> bool:
-	var current := room_manager.current_room
-	for node: Node in get_tree().get_nodes_in_group("grid_monkeys"):
-		var monkey := node as GridMonkey
-		if monkey and monkey.current_room == current and monkey.global_rect().has_point(world_pos):
-			monkey.shoo()
-			return true
+	var monkey := _monkey_at_current_room(world_pos)
+	if monkey != null:
+		monkey.shoo()
+		return true
 	return false
 
 
@@ -94,6 +148,31 @@ func _try_repair_power(world_pos: Vector2) -> bool:
 	if not pw.is_repairable() or not pw.global_rect().has_point(world_pos):
 		return false
 	return pw.start_action(PowerBox.ACTION_REPAIR_POWER, BaseDevice.ACTOR_PLAYER, self)
+
+
+func _device_at_current_room(world_pos: Vector2) -> BaseDevice:
+	for device: BaseDevice in room_manager.devices_in_room(room_manager.current_room):
+		if not device.can_monkey_interact:
+			continue
+		if _device_contains_point(device, world_pos):
+			return device
+	return null
+
+
+func _device_contains_point(device: BaseDevice, world_pos: Vector2) -> bool:
+	if device.has_method("global_rect"):
+		var rect: Rect2 = device.call("global_rect")
+		return rect.has_point(world_pos)
+	return false
+
+
+func _monkey_at_current_room(world_pos: Vector2) -> GridMonkey:
+	var current := room_manager.current_room
+	for node: Node in get_tree().get_nodes_in_group("grid_monkeys"):
+		var monkey := node as GridMonkey
+		if monkey and monkey.current_room == current and monkey.global_rect().has_point(world_pos):
+			return monkey
+	return null
 
 
 func _pick_up() -> void:

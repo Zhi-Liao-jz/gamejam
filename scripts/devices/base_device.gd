@@ -4,6 +4,7 @@ extends Node2D
 
 const ACTOR_PLAYER: StringName = &"player"
 const ACTOR_MONKEY: StringName = &"monkey"
+const DEFAULT_MONKEY_ACTION_DURATION := 2.0
 
 var device_id: StringName = &""
 var device_type: StringName = &""
@@ -11,6 +12,7 @@ var room_id: int = -1
 var is_open: bool = true
 var can_player_interact: bool = true
 var can_monkey_interact: bool = true
+var has_shock_trap: bool = false
 
 
 ## 基础设备配置。派生设备在 setup 中调用。
@@ -19,6 +21,7 @@ func setup_device(id: StringName, type: StringName, owner_room_id: int) -> void:
 	device_type = type
 	room_id = owner_room_id
 	add_to_group("devices")
+	EventBus.subscribe("work_started", _on_device_work_started)
 
 
 ## 当前可用动作列表。派生设备按状态返回。
@@ -26,8 +29,10 @@ func available_actions(_actor: StringName) -> Array[StringName]:
 	return []
 
 
-## 某动作需要的交互耗时。当前玩家动作即时，猴子由状态机蓄力后调用完成。
-func action_duration(_action_id: StringName, _actor: StringName) -> float:
+## 某动作需要的交互耗时。玩家动作即时，猴子动作由状态机等待后完成。
+func action_duration(_action_id: StringName, actor: StringName) -> float:
+	if actor == ACTOR_MONKEY:
+		return DEFAULT_MONKEY_ACTION_DURATION
 	return 0.0
 
 
@@ -36,11 +41,46 @@ func device_state() -> StringName:
 	return &"ready"
 
 
-## 统一动作入口。返回是否成功完成动作。
+## 开始一个动作，但不立刻执行效果。猴子用它进入可被打断的交互过程。
+func begin_action(action_id: StringName, actor: StringName, actor_node: Node = null) -> bool:
+	if not _can_actor_interact(actor):
+		return false
+	if not available_actions(actor).has(action_id):
+		return false
+	if actor == ACTOR_MONKEY and has_shock_trap:
+		_trigger_shock_trap(action_id, actor_node)
+		return false
+	EventBus.push_event("device_action_started", [device_id, action_id, actor_node])
+	return true
+
+
+## 完成一个已开始的动作。若动作在等待期间失效，按被打断处理。
+func finish_action(action_id: StringName, actor: StringName, actor_node: Node = null) -> bool:
+	if not _can_actor_interact(actor):
+		interrupt_action(action_id, actor_node)
+		return false
+	if actor == ACTOR_MONKEY and has_shock_trap:
+		_trigger_shock_trap(action_id, actor_node)
+		return false
+	if not available_actions(actor).has(action_id):
+		interrupt_action(action_id, actor_node)
+		return false
+	var finished := _perform_action(action_id, actor, actor_node)
+	if finished:
+		EventBus.push_event("device_action_finished", [device_id, action_id, actor_node])
+	else:
+		interrupt_action(action_id, actor_node)
+	return finished
+
+
+## 统一即时动作入口。返回是否成功完成动作。
 func start_action(action_id: StringName, actor: StringName, actor_node: Node = null) -> bool:
 	if not _can_actor_interact(actor):
 		return false
 	if not available_actions(actor).has(action_id):
+		return false
+	if actor == ACTOR_MONKEY and has_shock_trap:
+		_trigger_shock_trap(action_id, actor_node)
 		return false
 	EventBus.push_event("device_action_started", [device_id, action_id, actor_node])
 	var finished := _perform_action(action_id, actor, actor_node)
@@ -52,6 +92,32 @@ func start_action(action_id: StringName, actor: StringName, actor_node: Node = n
 ## 统一打断入口，供装备和后续猴子状态使用。
 func interrupt_action(action_id: StringName, actor_node: Node = null) -> void:
 	EventBus.push_event("device_action_interrupted", [device_id, action_id, actor_node])
+
+
+## 当前设备是否允许安装电击陷阱。
+func can_install_shock_trap() -> bool:
+	return (
+		can_monkey_interact
+		and not has_shock_trap
+		and not available_actions(ACTOR_MONKEY).is_empty()
+	)
+
+
+## 安装电击陷阱。陷阱触发后会打断猴子的本次动作并移除。
+func install_shock_trap() -> bool:
+	if not can_install_shock_trap():
+		return false
+	has_shock_trap = true
+	queue_redraw()
+	return true
+
+
+## 设备绘制函数内调用，用于提示已安装电击陷阱。
+func draw_shock_trap_marker(offset: Vector2) -> void:
+	if not has_shock_trap:
+		return
+	draw_circle(offset, 9.0, Color(0.95, 0.90, 0.18))
+	draw_circle(offset, 9.0, Color(0.10, 0.10, 0.05), false, 2.0)
 
 
 ## 派生设备实现实际动作。
@@ -67,3 +133,17 @@ func _can_actor_interact(actor: StringName) -> bool:
 			return can_monkey_interact
 		_:
 			return false
+
+
+func _trigger_shock_trap(action_id: StringName, actor_node: Node) -> void:
+	has_shock_trap = false
+	queue_redraw()
+	SoundManager.play("alarm")
+	interrupt_action(action_id, actor_node)
+	if actor_node != null and actor_node.has_method("interrupt_by_shock_trap"):
+		actor_node.call("interrupt_by_shock_trap", self)
+
+
+func _on_device_work_started() -> void:
+	has_shock_trap = false
+	queue_redraw()

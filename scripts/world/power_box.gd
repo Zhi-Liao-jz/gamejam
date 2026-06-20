@@ -50,6 +50,10 @@ func device_state() -> StringName:
 	return &"powered" if state == State.POWERED else &"outage"
 
 
+func can_install_shock_trap() -> bool:
+	return Game.day >= 6 and super.can_install_shock_trap()
+
+
 ## 猴子切断供电。
 func cut() -> void:
 	start_action(ACTION_CUT_POWER, ACTOR_MONKEY, null)
@@ -94,3 +98,4 @@ func _draw() -> void:
 	else:
 		draw_rect(rect, Color(0.20, 0.10, 0.05))
 		draw_rect(rect, Color(0.95, 0.35, 0.10), false, 4.0)  # 橙红 = 停电
+	draw_shock_trap_marker(Vector2(SIZE.x * 0.32, -SIZE.y * 0.32))

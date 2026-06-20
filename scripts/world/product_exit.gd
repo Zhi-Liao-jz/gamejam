@@ -8,6 +8,8 @@ const MAX_WAITING := 4  # 出口房间内最多积压的产品数
 const SLOT_PER_ROW := 4  # 摆放槽位每行数量
 const SLOT_START_X := -180.0  # 出口房间内产品摆放起始 x（房间局部坐标）
 const SLOT_SPACING := 90.0  # 槽位水平间距
+const TRAP_TARGET_SIZE := Vector2(96.0, 54.0)
+const TRAP_TARGET_OFFSET := Vector2(150.0, -22.0)
 
 @export var product_scene: PackedScene
 @export var owner_room_id: int = 3
@@ -17,6 +19,7 @@ const SLOT_SPACING := 90.0  # 槽位水平间距
 
 func _ready() -> void:
 	setup_device(&"product_exit", &"product_exit", owner_room_id)
+	queue_redraw()
 
 
 func available_actions(_actor: StringName) -> Array[StringName]:
@@ -34,6 +37,15 @@ func device_state() -> StringName:
 	if exit_room.products().size() >= MAX_WAITING:
 		return &"blocked"
 	return &"ready"
+
+
+func global_rect() -> Rect2:
+	var room := room_manager.find_room_by_role(&"product_exit")
+	if room == null:
+		return Rect2()
+	return Rect2(
+		room.global_position + TRAP_TARGET_OFFSET - TRAP_TARGET_SIZE * 0.5, TRAP_TARGET_SIZE
+	)
 
 
 ## 尝试生成一个产品。成功返回 true，失败由调用方决定是否给提示。
@@ -100,3 +112,21 @@ func _available_exit_room() -> Room:
 	if exit_room == null or not exit_room.panel_open():
 		return null
 	return exit_room
+
+
+func _draw() -> void:
+	var room := room_manager.find_room_by_role(&"product_exit")
+	if room == null:
+		return
+	var target_pos := to_local(room.global_position + TRAP_TARGET_OFFSET)
+	draw_rect(
+		Rect2(target_pos - TRAP_TARGET_SIZE * 0.5, TRAP_TARGET_SIZE), Color(0.88, 0.70, 0.24, 0.24)
+	)
+	draw_rect(
+		Rect2(target_pos - TRAP_TARGET_SIZE * 0.5, TRAP_TARGET_SIZE),
+		Color(0.95, 0.82, 0.30),
+		false,
+		2.0
+	)
+	var marker_pos := target_pos + Vector2(TRAP_TARGET_SIZE.x * 0.34, -TRAP_TARGET_SIZE.y * 0.28)
+	draw_shock_trap_marker(marker_pos)

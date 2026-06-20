@@ -49,6 +49,14 @@ func device_state() -> StringName:
 	return &"overheating" if _overheating else &"heating"
 
 
+func global_rect() -> Rect2:
+	return Rect2(global_position + SURFACE.position, SURFACE.size)
+
+
+func can_install_shock_trap() -> bool:
+	return Game.day >= 5 and super.can_install_shock_trap()
+
+
 func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
 	return action_id == ACTION_INSPECT
 
@@ -57,3 +65,4 @@ func _draw() -> void:
 	var c := OVERHEAT_TINT if _overheating else TINT
 	draw_rect(SURFACE, c.darkened(0.25))
 	draw_rect(SURFACE, c, false, 3.0)
+	draw_shock_trap_marker(SURFACE.position + Vector2(SURFACE.size.x - 18.0, 18.0))
