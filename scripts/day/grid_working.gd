@@ -1,5 +1,5 @@
 extends BaseState
-## 2.0 工作阶段：产品出口出货、玩家搬运交货；达成当天交货目标即进入结算。
+## 2.0 工作阶段：产品出口出货、玩家搬运交货；固定时长结束后进入结算。
 
 
 func enter(_msg: Dictionary = {}) -> void:
@@ -11,8 +11,8 @@ func enter(_msg: Dictionary = {}) -> void:
 	EventBus.push_event("work_started")
 
 
-func update(_delta: float) -> void:
+func update(delta: float) -> void:
 	if Ledger.day_failed:
 		fsm.transition_to(&"Failed")  # 自爆引爆 → 当天失败（优先于结算）
-	elif Ledger.is_quota_met():
+	elif Ledger.tick(delta):
 		fsm.transition_to(&"Settlement")
