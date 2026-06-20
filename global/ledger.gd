@@ -39,6 +39,4 @@ func reset_day() -> void:
 
 ## 当天结算：交货收入入 Game 账、推进天数、落盘。
 func settle_and_advance() -> void:
-	Game.money += income_today
-	Game.day += 1
-	Game.sync_to_save()
+	Game.complete_day(Game.day, income_today)

@@ -4,7 +4,7 @@ extends Resource
 ## 装备 id（equipments）不可重排或复用，否则毁档或静默错位。加字段请配合 save_version 迁移。
 
 const DEFAULT_PATH := "user://savegames"
-const SAVE_VERSION := 1  # 当前存档格式版本号；落盘时显式写入（见 save_to_file）
+const SAVE_VERSION := 2  # 当前存档格式版本号；落盘时显式写入（见 save_to_file）
 
 static var current: Savegame = null
 
@@ -18,6 +18,10 @@ static var current: Savegame = null
 @export var playtime := 0.0
 @export var equipments: Array[int] = []
 @export var now_day: int = 1
+@export var selected_day: int = 1
+@export var highest_unlocked_day: int = 1
+@export var cleared_days: Array[int] = []
+@export var best_profit_by_day: Dictionary = {}
 
 
 static func inti_save():
