@@ -97,15 +97,6 @@ func compute_wage() -> int:
 
 
 # ---------- 失败 / 通关判定（纯函数，集中在 Game）----------
-## 是否有设备彻底损坏（致命）—— 任一设备 is_fatal()。
-func has_fatal_fault() -> bool:
-	for node: Node in get_tree().get_nodes_in_group("devices"):
-		var dev := node as BaseDevice
-		if dev and dev.is_fatal():
-			return true
-	return false
-
-
 ## 结算后的预计存款 = 当前存款 + 当天工资（工资含损失/维修费扣除）。
 func projected_money() -> int:
 	return money + compute_wage()
