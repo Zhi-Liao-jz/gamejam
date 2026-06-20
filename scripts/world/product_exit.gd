@@ -36,6 +36,8 @@ func _on_timer_timeout() -> void:
 func _try_spawn() -> void:
 	if not Ledger.working_active:
 		return
+	if not Ledger.power_on:
+		return  # 停电 → 出口停止出货（P6）
 	var exit_room := room_manager.find_room_by_role(&"product_exit")
 	if exit_room == null:
 		return

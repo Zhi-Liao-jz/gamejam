@@ -10,6 +10,7 @@ var delivered_today: int = 0  # 当天已交货数量
 var income_today: int = 0  # 当天交货累计收入（结算时入账）
 var working_active: bool = false  # 当前是否"工作中"阶段（产品出口 / 拿放据此启停）
 var day_failed: bool = false  # 当天是否已失败（自爆引爆触发；DayManager 据此转 Failed）
+var power_on: bool = true  # 供电是否正常（发电机被切断则 false；产品出口/加热台据此停摆）
 
 
 ## 当天交货目标（难度曲线：每天 +QUOTA_PER_DAY）。
@@ -33,6 +34,7 @@ func reset_day() -> void:
 	delivered_today = 0
 	income_today = 0
 	day_failed = false
+	power_on = true
 
 
 ## 当天结算：交货收入入 Game 账、推进天数、落盘。
