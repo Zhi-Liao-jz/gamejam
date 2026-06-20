@@ -6,6 +6,7 @@ extends Node2D
 var _held: Product = null
 
 @onready var room_manager := get_node("../RoomManager") as RoomManager
+@onready var product_exit := get_node("../ProductExit") as ProductExit
 
 
 func _ready() -> void:
@@ -24,10 +25,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if click == null or click.button_index != MOUSE_BUTTON_LEFT or not click.pressed:
 		return
 	var pos := get_global_mouse_position()
-	# 点击优先级：赶猴子 > 重开面板 > 重置自爆 > 修发电机 > 拿放产品（持有产品时也能先处理威胁）
+	# 点击优先级：赶猴子 > 重开面板 > 出口按钮 > 重置自爆 > 修发电机 > 拿放产品
 	if (
 		_try_shoo_monkey(pos)
 		or _try_open_panel(pos)
+		or _try_spawn_from_exit(pos)
 		or _try_reset_self_destruct(pos)
 		or _try_repair_power(pos)
 	):
@@ -60,6 +62,18 @@ func _try_open_panel(world_pos: Vector2) -> bool:
 	if panel == null:
 		return false
 	panel.open()
+	return true
+
+
+## 点击产品出口面板按钮 → 生成一个产品；失败也消费这次点击，避免误拿面板下的产品。
+func _try_spawn_from_exit(world_pos: Vector2) -> bool:
+	var room := room_manager.current_room_node()
+	if room == null or room.role != &"product_exit":
+		return false
+	if not room.has_panel() or not room.control_panel.global_rect().has_point(world_pos):
+		return false
+	if product_exit != null:
+		product_exit.try_spawn_product()
 	return true
 
 
@@ -104,16 +118,16 @@ func _drop_or_deliver() -> void:
 	if room == null:
 		return
 	if room.is_delivery():
-		if room.color_key == _held.color_key:
-			if not room.panel_open():
-				return  # 面板被猴子关闭：放上去也不结算，保持持有，先去点面板重开
-			if not _held.is_deliverable():
-				return  # 生料需先去加热台 / 已烧焦报废：不结算，保持持有
-			Ledger.deliver(_held.value)
+		if not room.panel_open():
+			return  # 面板被猴子关闭：放上去也不结算，保持持有，先去点面板重开
+		if room.color_key == _held.color_key and _held.is_deliverable():
+			Ledger.deliver(_held)
 			SoundManager.play("boop")
-			_held.queue_free()
-			_clear_held()
-		# 颜色不符：保持持有，玩家自己换交货点（P1 不罚分）
+		else:
+			Ledger.record_wrong_delivery(_held, _held.is_damaged)
+			SoundManager.play("alarm")
+		_held.queue_free()
+		_clear_held()
 		return
 	# 非交货点房间：把产品放进当前房间
 	room.add_product(_held, room.contents.to_local(get_global_mouse_position()))

@@ -4,14 +4,7 @@ extends BaseState
 
 func enter(_msg: Dictionary = {}) -> void:
 	Ledger.working_active = false
-	var data := {
-		"day": Game.day,
-		"delivered": Ledger.delivered_today,
-		"quota": Ledger.quota_today(),
-		"profit": Ledger.profit_today,
-		"combo": Ledger.combo_count,
-	}
-	EventBus.push_event("day_summary", data)
+	EventBus.push_event("day_summary", Ledger.summary_data())
 
 
 func update(_delta: float) -> void:

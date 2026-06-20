@@ -70,6 +70,7 @@ var _rooms: Array[Room] = []
 
 
 func _ready() -> void:
+	EventBus.subscribe("work_started", _on_work_started)
 	_build_rooms()
 	_build_panels()
 	_build_self_destruct()
@@ -145,6 +146,13 @@ func panel_rooms() -> Array[Room]:
 		if room.has_panel():
 			result.append(room)
 	return result
+
+
+## 清空所有房间内未交付的产品。每天重新开始时调用，避免上一天产品污染新账本。
+func clear_products() -> void:
+	for room: Room in _rooms:
+		for product: Product in room.products():
+			product.queue_free()
 
 
 ## 房间图上从 from_id 到 to_id 的"第一步"房间 id（BFS）；不可达返回 -1。供猴子逐格寻路。
@@ -250,3 +258,7 @@ func _room_id_at(grid: Vector2i) -> int:
 		if LAYOUT[i]["grid"] == grid:
 			return i
 	return -1
+
+
+func _on_work_started() -> void:
+	clear_products()
