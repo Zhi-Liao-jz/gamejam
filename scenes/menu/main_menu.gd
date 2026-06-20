@@ -1,5 +1,7 @@
 extends Node
 
+const DAY_SELECT_SCENE: String = "res://scenes/menu/day_select.tscn"
+
 @onready var play_button: Button = %play_button
 @onready var options_button: Button = %options_button
 @onready var quit_button: Button = %quit_button
@@ -30,13 +32,12 @@ func _add_new_game_button() -> void:
 
 
 func play() -> void:
-	# Game(autoload)已在启动时 load_from_save，主场景直接从存档进度开局（继续游戏）
-	get_tree().change_scene_to_file("res://scenes/main_grid.tscn")
+	get_tree().change_scene_to_file(DAY_SELECT_SCENE)
 
 
 func new_game() -> void:
 	Game.reset_new_game()  # 删档、状态归零、从第 1 天开
-	get_tree().change_scene_to_file("res://scenes/main_grid.tscn")
+	get_tree().change_scene_to_file(DAY_SELECT_SCENE)
 
 
 func show_sub_panel(panel):
