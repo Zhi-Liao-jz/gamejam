@@ -50,7 +50,7 @@ func pick_target() -> int:
 	for room: Room in room_manager.panel_rooms():
 		if room.role == &"heater" and Game.day < 5:
 			continue  # 加热台第5天起才成为猴子目标
-		if room.panel_open():
+		if _room_monkey_device(room) != null:
 			candidates.append(room.room_id)
 	# 第3天起把中央自爆开关纳入目标（最高威胁）；仅当它还能被破坏时
 	var sd := room_manager.self_destruct
@@ -73,6 +73,14 @@ func pick_target() -> int:
 			free.append(rid)
 	var pool := free if not free.is_empty() else candidates
 	return pool[randi() % pool.size()]
+
+
+## 当前目标房间里猴子可操作的设备；没有则返回 null。
+func target_device() -> BaseDevice:
+	var room := room_manager.room_node(target_room)
+	if room == null:
+		return null
+	return _room_monkey_device(room)
 
 
 ## 朝目标房间走一步（房间图寻路）；跨入新房间时更新 current_room；返回是否已抵达目标房间。
@@ -120,6 +128,18 @@ func play_loop(key: String, pitch: float = 1.0) -> void:
 func stop_audio() -> void:
 	if _audio:
 		_audio.stop()
+
+
+func _room_monkey_device(room: Room) -> BaseDevice:
+	if room.has_panel():
+		var panel := room.control_panel
+		if not panel.available_actions(BaseDevice.ACTOR_MONKEY).is_empty():
+			return panel
+		return null
+	var devices := room_manager.interactable_devices_in_room(room.room_id, BaseDevice.ACTOR_MONKEY)
+	if devices.is_empty():
+		return null
+	return devices[randi() % devices.size()]
 
 
 func _draw() -> void:

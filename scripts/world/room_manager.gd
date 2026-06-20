@@ -148,6 +148,25 @@ func panel_rooms() -> Array[Room]:
 	return result
 
 
+## 某房间内当前登记的设备。
+func devices_in_room(target_room_id: int) -> Array[BaseDevice]:
+	var result: Array[BaseDevice] = []
+	for node: Node in get_tree().get_nodes_in_group("devices"):
+		var device := node as BaseDevice
+		if device != null and device.room_id == target_room_id:
+			result.append(device)
+	return result
+
+
+## 某房间内指定行动者可用的设备。
+func interactable_devices_in_room(target_room_id: int, actor: StringName) -> Array[BaseDevice]:
+	var result: Array[BaseDevice] = []
+	for device: BaseDevice in devices_in_room(target_room_id):
+		if not device.available_actions(actor).is_empty():
+			result.append(device)
+	return result
+
+
 ## 清空所有房间内未交付的产品。每天重新开始时调用，避免上一天产品污染新账本。
 func clear_products() -> void:
 	for room: Room in _rooms:

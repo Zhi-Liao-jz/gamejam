@@ -1,20 +1,66 @@
 class_name ProductExit
-extends Node2D
+extends BaseDevice
 ## 产品出口：玩家或后续猴子点击出口按钮后，在"产品出口"房间生成随机颜色产品。
 ## 颜色取自当前交货点房间，保证每个产品都有对应交货点。
 
+const ACTION_SPAWN: StringName = &"spawn_product"
 const MAX_WAITING := 4  # 出口房间内最多积压的产品数
 const SLOT_PER_ROW := 4  # 摆放槽位每行数量
 const SLOT_START_X := -180.0  # 出口房间内产品摆放起始 x（房间局部坐标）
 const SLOT_SPACING := 90.0  # 槽位水平间距
 
 @export var product_scene: PackedScene
+@export var owner_room_id: int = 3
 
 @onready var room_manager := get_node("../RoomManager") as RoomManager
 
 
+func _ready() -> void:
+	setup_device(&"product_exit", &"product_exit", owner_room_id)
+
+
+func available_actions(_actor: StringName) -> Array[StringName]:
+	if not _can_spawn_product():
+		return []
+	return [ACTION_SPAWN]
+
+
+func device_state() -> StringName:
+	var exit_room := _available_exit_room()
+	if exit_room == null:
+		if not Ledger.power_on:
+			return &"offline"
+		return &"disabled"
+	if exit_room.products().size() >= MAX_WAITING:
+		return &"blocked"
+	return &"ready"
+
+
 ## 尝试生成一个产品。成功返回 true，失败由调用方决定是否给提示。
 func try_spawn_product() -> bool:
+	return start_action(ACTION_SPAWN, ACTOR_PLAYER, null)
+
+
+func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
+	if action_id != ACTION_SPAWN:
+		return false
+	return _spawn_product()
+
+
+func _can_spawn_product() -> bool:
+	var exit_room := _available_exit_room()
+	if exit_room == null:
+		return false
+	var waiting := exit_room.products().size()
+	if waiting >= MAX_WAITING:
+		return false
+	var targets := room_manager.delivery_rooms()
+	if targets.is_empty():
+		return false
+	return true
+
+
+func _spawn_product() -> bool:
 	var exit_room := _available_exit_room()
 	if exit_room == null:
 		return false
