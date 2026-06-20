@@ -31,6 +31,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _jump_to_day(day: int) -> void:
-	Game.day = day
+	Game.highest_unlocked_day = maxi(Game.highest_unlocked_day, day)
+	Game.start_day(day)
 	_day_manager.transition_to(&"Working")  # 重入工作阶段：reset + work_started 重建当天
 	_label.text = "🔧 调试：已跳到第 %d 天" % day
