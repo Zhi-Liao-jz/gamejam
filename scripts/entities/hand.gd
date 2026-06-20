@@ -34,11 +34,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _try_use_selected_equipment(pos):
 		get_viewport().set_input_as_handled()
 		return
-	# 点击优先级：赶猴子 > 重开面板 > 出口按钮 > 重置自爆 > 修发电机 > 拿放产品
+	# 点击优先级：赶猴子 > 重开面板 > 出口按钮 > 加热台 > 重置自爆 > 修发电机 > 拿放产品
 	if (
 		_try_shoo_monkey(pos)
 		or _try_open_panel(pos)
 		or _try_spawn_from_exit(pos)
+		or _try_toggle_heater(pos)
 		or _try_reset_self_destruct(pos)
 		or _try_repair_power(pos)
 	):
@@ -130,6 +131,21 @@ func _try_spawn_from_exit(world_pos: Vector2) -> bool:
 	return true
 
 
+## 点击加热台控制区：玩家按当前状态循环切换 关闭 / 正常 / 过热。
+func _try_toggle_heater(world_pos: Vector2) -> bool:
+	var room := room_manager.current_room_node()
+	if room == null or room.role != &"heater":
+		return false
+	var heater := _heater_at_current_room(world_pos)
+	if heater == null:
+		return false
+	var action_id := heater.next_player_action()
+	if action_id == &"":
+		return true
+	heater.start_action(action_id, BaseDevice.ACTOR_PLAYER, self)
+	return true
+
+
 ## 在中央房间点击自爆开关（罩被开 / 倒计时中）→ 重置；命中返回 true。
 func _try_reset_self_destruct(world_pos: Vector2) -> bool:
 	var sd := room_manager.self_destruct
@@ -148,6 +164,14 @@ func _try_repair_power(world_pos: Vector2) -> bool:
 	if not pw.is_repairable() or not pw.global_rect().has_point(world_pos):
 		return false
 	return pw.start_action(PowerBox.ACTION_REPAIR_POWER, BaseDevice.ACTOR_PLAYER, self)
+
+
+func _heater_at_current_room(world_pos: Vector2) -> Heater:
+	for device: BaseDevice in room_manager.devices_in_room(room_manager.current_room):
+		var heater := device as Heater
+		if heater != null and _device_contains_point(heater, world_pos):
+			return heater
+	return null
 
 
 func _device_at_current_room(world_pos: Vector2) -> BaseDevice:
