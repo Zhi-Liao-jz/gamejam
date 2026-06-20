@@ -12,6 +12,7 @@ const DAY_UNLOCK_TEXT: Dictionary[int, String] = {
 	5: "商店、电击陷阱、捕网（后续接入）",
 	6: "发电机、接线盒、供电影响",
 }
+const SHOP_EQUIPMENT: Array[int] = [Game.EQUIPMENT_SHOCK_TRAP, Game.EQUIPMENT_NET]
 
 @onready var money_label: Label = %money_label
 @onready var day_list: VBoxContainer = %day_list
@@ -43,6 +44,21 @@ func _build_day_buttons() -> void:
 		day_list.add_child(more)
 
 
+func _build_shop_items() -> void:
+	money_label.text = "当前资金 $%d" % Game.money
+	for child: Node in day_list.get_children():
+		child.queue_free()
+	for equipment_id: int in SHOP_EQUIPMENT:
+		var button := Button.new()
+		button.text = _shop_button_text(equipment_id)
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.disabled = (
+			Game.has_equipment(equipment_id) or Game.money < Game.equipment_price(equipment_id)
+		)
+		button.pressed.connect(_buy_equipment.bind(equipment_id))
+		day_list.add_child(button)
+
+
 func _day_button_text(day: int) -> String:
 	var cleared := "已通关" if Game.cleared_days.has(day) else "未通关"
 	var best := int(Game.best_profit_by_day.get(day, 0))
@@ -53,13 +69,36 @@ func _day_unlock_text(day: int) -> String:
 	return DAY_UNLOCK_TEXT.get(day, "更多产品规则、更多猴子、更多设备")
 
 
+func _shop_button_text(equipment_id: int) -> String:
+	var owned := (
+		"已拥有" if Game.has_equipment(equipment_id) else "$%d" % Game.equipment_price(equipment_id)
+	)
+	return (
+		"%s    %s\n%s"
+		% [
+			Game.equipment_name(equipment_id),
+			owned,
+			Game.equipment_description(equipment_id),
+		]
+	)
+
+
 func _start_day(day: int) -> void:
 	Game.start_day(day)
 	get_tree().change_scene_to_file(MAIN_GRID_SCENE)
 
 
 func _on_shop_pressed() -> void:
-	shop_status.text = "商店系统将在装备底座阶段接入"
+	shop_status.text = "商店：购买结果会立即保存"
+	_build_shop_items()
+
+
+func _buy_equipment(equipment_id: int) -> void:
+	if Game.buy_equipment(equipment_id):
+		shop_status.text = "已购买 %s" % Game.equipment_name(equipment_id)
+	else:
+		shop_status.text = "资金不足或已拥有"
+	_build_shop_items()
 
 
 func _on_back_pressed() -> void:
