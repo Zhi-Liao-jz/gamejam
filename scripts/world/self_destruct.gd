@@ -87,6 +87,10 @@ func device_state() -> StringName:
 			return &"unknown"
 
 
+func can_install_shock_trap() -> bool:
+	return Game.day >= 3 and super.can_install_shock_trap()
+
+
 ## 猴子推进一步破坏：受保护→打开罩；罩开→按下按钮(起倒计时)。返回是否已按下（猴子据此逃跑）。
 func sabotage_step() -> bool:
 	if state == State.PROTECTED:
@@ -161,3 +165,4 @@ func _draw() -> void:
 		draw_rect(rect, Color(0.70, 0.85, 1.0, 0.85), false, 5.0)  # 玻璃罩盖着：浅蓝边框
 	else:
 		draw_rect(rect, Color(0.95, 0.30, 0.20), false, 5.0)  # 罩开 / 危险：红框
+	draw_shock_trap_marker(Vector2(SIZE.x * 0.32, -SIZE.y * 0.32))

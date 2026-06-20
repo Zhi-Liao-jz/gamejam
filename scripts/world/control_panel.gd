@@ -38,6 +38,12 @@ func device_state() -> StringName:
 	return &"open" if is_open else &"closed"
 
 
+func can_install_shock_trap() -> bool:
+	if controls == &"heater" and Game.day < 5:
+		return false
+	return super.can_install_shock_trap()
+
+
 ## 打开面板（已开则不重复广播）。
 func open() -> void:
 	if is_open:
@@ -77,3 +83,4 @@ func _draw() -> void:
 	var fill := Color(0.20, 0.62, 0.32) if is_open else Color(0.72, 0.18, 0.16)
 	draw_rect(rect, fill)
 	draw_rect(rect, Color(0.92, 0.92, 0.92), false, 2.0)
+	draw_shock_trap_marker(Vector2(SIZE.x * 0.34, -SIZE.y * 0.28))

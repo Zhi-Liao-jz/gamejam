@@ -3,6 +3,7 @@ extends Node
 
 const EQUIPMENT_SHOCK_TRAP: int = 1
 const EQUIPMENT_NET: int = 2
+const EQUIPMENT_NONE: int = 0
 const MAX_MONKEYS: int = 3  # 同时在场猴子数上限（2 设备下 2-3 只即"顾此失彼"，再多无目标可抢只糊声音）
 const EQUIPMENT_DATA: Dictionary[int, Dictionary] = {
 	EQUIPMENT_SHOCK_TRAP:
@@ -13,7 +14,7 @@ const EQUIPMENT_DATA: Dictionary[int, Dictionary] = {
 		"price": 120,
 		"max_count": 3,
 		"refill_interval": 30.0,
-		"description": "安装到设备上，后续会在猴子操作时触发打断。",
+		"description": "安装到设备上，猴子操作时触发打断。",
 	},
 	EQUIPMENT_NET:
 	{
@@ -23,7 +24,8 @@ const EQUIPMENT_DATA: Dictionary[int, Dictionary] = {
 		"price": 100,
 		"max_count": 3,
 		"refill_interval": 30.0,
-		"description": "对当前房间猴子使用，后续会接入 10 秒控制。",
+		"effect_duration": 10.0,
+		"description": "对当前房间猴子使用，使其 10 秒不能行动。",
 	},
 }
 
@@ -36,6 +38,7 @@ var best_profit_by_day: Dictionary[int, int] = {}
 var owned_equipment: Array[int] = []
 var equipment_counts: Dictionary[int, int] = {}
 var equipment_refill_left: Dictionary[int, float] = {}
+var selected_equipment: int = EQUIPMENT_NONE
 
 
 func _ready() -> void:
@@ -135,33 +138,26 @@ func has_equipment(equipment_id: int) -> bool:
 
 
 func equipment_name(equipment_id: int) -> String:
-	return String(equipment_data(equipment_id).get("name", "未知装备"))
+	return String(_equipment_data(equipment_id).get("name", "未知装备"))
 
 
 func equipment_price(equipment_id: int) -> int:
-	return int(equipment_data(equipment_id).get("price", 0))
+	return int(_equipment_data(equipment_id).get("price", 0))
 
 
 func equipment_description(equipment_id: int) -> String:
-	return String(equipment_data(equipment_id).get("description", ""))
+	return String(_equipment_data(equipment_id).get("description", ""))
 
 
 func equipment_max_count(equipment_id: int) -> int:
-	return int(equipment_data(equipment_id).get("max_count", 0))
-
-
-func equipment_refill_interval(equipment_id: int) -> float:
-	return float(equipment_data(equipment_id).get("refill_interval", 0.0))
-
-
-func equipment_data(equipment_id: int) -> Dictionary:
-	return EQUIPMENT_DATA.get(equipment_id, {})
+	return int(_equipment_data(equipment_id).get("max_count", 0))
 
 
 ## 进入工作日时重置当天装备数量和补给倒计时。
 func reset_runtime_equipment() -> void:
 	equipment_counts.clear()
 	equipment_refill_left.clear()
+	selected_equipment = EQUIPMENT_NONE
 	for equipment_id: int in owned_equipment:
 		_reset_one_runtime_equipment(equipment_id)
 
@@ -182,6 +178,39 @@ func equipment_refill_remaining(equipment_id: int) -> float:
 	return float(equipment_refill_left.get(equipment_id, 0.0))
 
 
+func equipment_effect_duration(equipment_id: int) -> float:
+	return float(_equipment_data(equipment_id).get("effect_duration", 0.0))
+
+
+func select_equipment(equipment_id: int) -> bool:
+	if equipment_id == EQUIPMENT_NONE:
+		selected_equipment = EQUIPMENT_NONE
+		return true
+	if not has_equipment(equipment_id):
+		return false
+	selected_equipment = equipment_id
+	return true
+
+
+func toggle_equipment(equipment_id: int) -> bool:
+	if selected_equipment == equipment_id:
+		selected_equipment = EQUIPMENT_NONE
+		return true
+	return select_equipment(equipment_id)
+
+
+func consume_equipment(equipment_id: int) -> bool:
+	if not has_equipment(equipment_id):
+		return false
+	var current := equipment_count(equipment_id)
+	if current <= 0:
+		return false
+	equipment_counts[equipment_id] = current - 1
+	if equipment_refill_remaining(equipment_id) <= 0.0:
+		equipment_refill_left[equipment_id] = _equipment_refill_interval(equipment_id)
+	return true
+
+
 # ---------- 启动时注册键位（避免手改 project.godot 的 InputMap） ----------
 func _setup_input() -> void:
 	_bind("move_up", [KEY_W, KEY_UP])
@@ -191,6 +220,8 @@ func _setup_input() -> void:
 	_bind("interact", [KEY_E, KEY_SPACE])
 	_bind("retry", [KEY_R])
 	_bind("next_day", [KEY_N, KEY_ENTER])
+	_bind("select_shock_trap", [KEY_Z])
+	_bind("select_net", [KEY_X])
 
 
 func _bind(action: StringName, keys: Array) -> void:
@@ -240,19 +271,27 @@ func _copy_int_array(source: Array[int]) -> Array[int]:
 func _reset_one_runtime_equipment(equipment_id: int) -> void:
 	var max_count := equipment_max_count(equipment_id)
 	equipment_counts[equipment_id] = max_count
-	equipment_refill_left[equipment_id] = equipment_refill_interval(equipment_id)
+	equipment_refill_left[equipment_id] = _equipment_refill_interval(equipment_id)
 
 
 func _tick_one_equipment(equipment_id: int, delta: float) -> bool:
 	var max_count := equipment_max_count(equipment_id)
 	var current := equipment_count(equipment_id)
 	if current >= max_count:
-		equipment_refill_left[equipment_id] = equipment_refill_interval(equipment_id)
+		equipment_refill_left[equipment_id] = _equipment_refill_interval(equipment_id)
 		return false
 	var remaining := maxf(0.0, equipment_refill_remaining(equipment_id) - delta)
 	if remaining > 0.0:
 		equipment_refill_left[equipment_id] = remaining
 		return false
 	equipment_counts[equipment_id] = mini(current + 1, max_count)
-	equipment_refill_left[equipment_id] = equipment_refill_interval(equipment_id)
+	equipment_refill_left[equipment_id] = _equipment_refill_interval(equipment_id)
 	return true
+
+
+func _equipment_refill_interval(equipment_id: int) -> float:
+	return float(_equipment_data(equipment_id).get("refill_interval", 0.0))
+
+
+func _equipment_data(equipment_id: int) -> Dictionary:
+	return EQUIPMENT_DATA.get(equipment_id, {})

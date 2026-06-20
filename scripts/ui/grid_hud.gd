@@ -207,6 +207,7 @@ func _format_time(seconds: float) -> String:
 
 func _equipment_text() -> String:
 	var parts: Array[String] = []
+	parts.append("当前 %s" % _selected_equipment_text())
 	for equipment_id: int in HUD_EQUIPMENT:
 		if not Game.has_equipment(equipment_id):
 			parts.append("%s 未拥有" % Game.equipment_name(equipment_id))
@@ -222,3 +223,13 @@ func _equipment_text() -> String:
 		)
 		parts.append(equipment_status)
 	return "    ".join(parts)
+
+
+func _selected_equipment_text() -> String:
+	match Game.selected_equipment:
+		Game.EQUIPMENT_SHOCK_TRAP:
+			return "电击陷阱(Z)"
+		Game.EQUIPMENT_NET:
+			return "捕网(X)"
+		_:
+			return "未选(Z/X)"

@@ -1,26 +1,38 @@
 extends BaseState
-## 潜入：选一个开着面板的房间，沿房间图走过去；走到目标房间 → 捣乱。
-## 无可关面板（都被关了 / 玩家全开着没动）→ 原地静默待命，不放假预警脚步声。
+## 游荡：猴子在房间之间随机移动，抵达后随机挑当前房间设备动作。
 
 var monkey: GridMonkey
+var _pause_left: float = 0.0
 
 
 func enter(_msg: Dictionary = {}) -> void:
 	monkey = fsm.get_parent() as GridMonkey
-	monkey.play_loop("monkey_step")
+	_pause_left = randf_range(GridMonkey.WANDER_PAUSE_MIN, GridMonkey.WANDER_PAUSE_MAX)
+	monkey.clear_current_action()
 
 
 func physics_update(delta: float) -> void:
-	if monkey.target_room == -1 or not _target_valid():
-		monkey.target_room = monkey.pick_target()
-		if monkey.target_room == -1:
+	if monkey.target_room != -1 and monkey.current_room != monkey.target_room:
+		monkey.play_loop("monkey_step")
+		if monkey.advance_toward(monkey.target_room, monkey.speed, delta):
+			monkey.target_room = -1
 			monkey.stop_audio()
-			return
-		monkey.play_loop("monkey_step")  # 重新有目标 → 脚步声恢复
-	if monkey.advance_toward(monkey.target_room, monkey.speed, delta):
+			_pause_left = randf_range(GridMonkey.WANDER_PAUSE_MIN, GridMonkey.WANDER_PAUSE_MAX)
+		return
+	monkey.stop_audio()
+	_pause_left -= delta
+	if _pause_left > 0.0:
+		return
+	if monkey.pick_current_room_action():
 		fsm.transition_to(&"GridTampering")
+		return
+	monkey.target_room = monkey.pick_wander_room()
+	if monkey.target_room == -1:
+		_pause_left = randf_range(GridMonkey.WANDER_PAUSE_MIN, GridMonkey.WANDER_PAUSE_MAX)
+	elif monkey.target_room == monkey.current_room:
+		_pause_left = 0.0
 
 
-## 目标仍可捣乱：房间内仍有猴子可用设备动作才继续。
-func _target_valid() -> bool:
-	return monkey.target_device() != null
+func exit() -> void:
+	if monkey != null:
+		monkey.stop_audio()
