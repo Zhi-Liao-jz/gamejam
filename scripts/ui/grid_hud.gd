@@ -119,8 +119,8 @@ func _refresh_info() -> void:
 		warn += "\n⚡ 停电！产品出口 / 加热台停摆，切到右下修复"
 	info_label.text = (
 		(
-			"第 %d 天    剩余 %s    存款 $%d\n今日利润 $%d    交货 %d / %d    连击 %d\n监控中：%s    手持：%s\n"
-			+ "[WASD] 切监控    [左键] 拿放 / 重开面板 / 赶猴%s"
+			"第 %d 天    剩余 %s    存款 $%d\n今日利润 $%d    交货 %d / %d    连击 %d    小费 $%d\n监控中：%s    手持：%s\n"
+			+ "[WASD] 切监控    [左键] 拿放 / 出口出货 / 重开面板 / 赶猴%s"
 		)
 		% [
 			Game.day,
@@ -130,6 +130,7 @@ func _refresh_info() -> void:
 			Ledger.delivered_today,
 			Ledger.quota_today(),
 			Ledger.combo_count,
+			Ledger.current_combo_tip(),
 			room_name,
 			_held_text,
 			warn,
@@ -156,8 +157,29 @@ func _on_panel_changed(room_id: int, is_open: bool) -> void:
 func _on_day_summary(data: Dictionary) -> void:
 	summary_panel.visible = true
 	summary_label.text = (
-		"第 %d 天 完成！\n\n交货 %d / %d\n当前连击 %d\n今日利润 $%d\n\n[N] 进入下一天"
-		% [data["day"], data["delivered"], data["quota"], data["combo"], data["profit"]]
+		(
+			"第 %d 天 完成！\n\n"
+			+ "交货 %d / %d\n"
+			+ "当前连击 %d\n"
+			+ "基础收益 +$%d\n"
+			+ "连击小费 +$%d\n"
+			+ "产品成本 -$%d\n"
+			+ "误交 %d    损坏 %d\n"
+			+ "今日利润 $%d\n\n"
+			+ "[N] 进入下一天"
+		)
+		% [
+			data["day"],
+			data["delivered"],
+			data["quota"],
+			data["combo"],
+			data["base_reward"],
+			data["tip"],
+			data["cost"],
+			data["wrong"],
+			data["damaged"],
+			data["profit"],
+		]
 	)
 
 

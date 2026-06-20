@@ -1,6 +1,6 @@
 class_name Product
 extends Node2D
-## 待搬运的产品：有颜色，需送到同色交货点。部分产品是"生料"，需先在加热台加工才能交货（P4）。
+## 待搬运的产品：有颜色、成本和收益。部分产品是"生料"，需先在加热台加工才能交货。
 
 const SIZE := Vector2(60.0, 60.0)
 const HEAT_TIME := 3.0  # 生料加热到熟所需秒数
@@ -8,7 +8,10 @@ const BURN_TIME := 3.0  # 变熟后仍留在加热台、再过这么久就烧焦
 
 var color_key: StringName = &""  # 颜色键：red / blue / green（与交货点房间匹配）
 var tint := Color.WHITE
-var value: int = 0
+var cost: int = 0
+var base_reward: int = 0
+var is_processed: bool = false
+var is_damaged: bool = false
 var current_room: int = -1
 var requires_heat: bool = false  # 是否生料（需加热才能交货）
 var heated: bool = false  # 是否已加热到熟
@@ -16,12 +19,20 @@ var burned: bool = false  # 是否已烧焦（报废，永不可交货）
 var heat_progress: float = 0.0  # 在加热台累计受热时间
 
 
-## 写入产品的颜色、价值、是否生料。
-func setup(key: StringName, color: Color, product_value: int, raw: bool = false) -> void:
+## 写入产品的颜色、经济数值、是否生料。
+func setup(
+	key: StringName, color: Color, product_cost: int, product_reward: int, raw: bool = false
+) -> void:
 	color_key = key
 	tint = color
-	value = product_value
+	cost = product_cost
+	base_reward = product_reward
 	requires_heat = raw
+	is_processed = not raw
+	is_damaged = false
+	heated = false
+	burned = false
+	heat_progress = 0.0
 	queue_redraw()
 
 
@@ -32,7 +43,7 @@ func global_rect() -> Rect2:
 
 ## 是否可交货：未烧焦，且（无需加热 或 已加热）。
 func is_deliverable() -> bool:
-	return not burned and (not requires_heat or heated)
+	return not is_damaged and (not requires_heat or is_processed)
 
 
 ## 由加热台逐帧推进受热：到点变熟，再过头则烧焦。返回状态是否刚发生变化。
@@ -43,9 +54,11 @@ func advance_heat(delta: float) -> bool:
 	var changed := false
 	if not heated and heat_progress >= HEAT_TIME:
 		heated = true
+		is_processed = true
 		changed = true
 	elif heated and heat_progress >= HEAT_TIME + BURN_TIME:
 		burned = true
+		is_damaged = true
 		changed = true
 	queue_redraw()
 	return changed

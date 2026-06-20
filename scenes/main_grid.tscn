@@ -63,17 +63,17 @@ mouse_filter = 2
 theme_override_font_sizes/font_size = 18
 
 [node name="SummaryPanel" type="Panel" parent="UI/GridHud"]
-offset_left = 340.0
-offset_top = 170.0
-offset_right = 760.0
-offset_bottom = 400.0
+offset_left = 310.0
+offset_top = 130.0
+offset_right = 810.0
+offset_bottom = 470.0
 mouse_filter = 2
 
 [node name="Label" type="Label" parent="UI/GridHud/SummaryPanel"]
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 396.0
-offset_bottom = 206.0
+offset_right = 476.0
+offset_bottom = 316.0
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1
