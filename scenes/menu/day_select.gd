@@ -9,7 +9,7 @@ const DAY_UNLOCK_TEXT: Dictionary[int, String] = {
 	2: "猴子、控制面板",
 	3: "中央自爆开关、玻璃罩",
 	4: "加热台",
-	5: "商店、电击陷阱、捕网（后续接入）",
+	5: "商店、电击陷阱、捕网",
 	6: "发电机、接线盒、供电影响",
 }
 const SHOP_EQUIPMENT: Array[int] = [Game.EQUIPMENT_SHOCK_TRAP, Game.EQUIPMENT_NET]

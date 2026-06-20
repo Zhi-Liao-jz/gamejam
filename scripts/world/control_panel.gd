@@ -38,12 +38,6 @@ func device_state() -> StringName:
 	return &"open" if is_open else &"closed"
 
 
-func can_install_shock_trap() -> bool:
-	if controls == &"heater" and Game.day < 5:
-		return false
-	return super.can_install_shock_trap()
-
-
 ## 打开面板（已开则不重复广播）。
 func open() -> void:
 	if is_open:

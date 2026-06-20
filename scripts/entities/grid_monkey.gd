@@ -200,8 +200,7 @@ func _device_unlocked(device: BaseDevice) -> bool:
 		&"power":
 			return Game.day >= 6
 		&"control_panel":
-			var panel := device as ControlPanel
-			return panel == null or panel.controls != &"heater" or Game.day >= 5
+			return true
 		_:
 			return true
 
