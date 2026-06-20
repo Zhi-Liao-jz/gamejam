@@ -6,7 +6,7 @@ func enter(_msg: Dictionary = {}) -> void:
 	Ledger.reset_day()
 	Ledger.working_active = true
 	# P2：控制面板各自订阅 work_started 自动复位为开、猴子生成器据此清场重建；当前无金钱损失项
-	# （猴子的惩罚=关面板拖慢交货）。P3 接入自爆/设备维修费时，当天损失的重置在此并入。
+	# （猴子的惩罚=关面板拖慢交货）。正式迁移时当天利润 / 连击 / 损坏统一放 Ledger。
 	EventBus.push_event("hide_day_summary")
 	EventBus.push_event("work_started")
 

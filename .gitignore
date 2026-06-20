@@ -4,3 +4,6 @@
 
 # new-branch 脚本的本地用户配置（每人各自的用户名缩写）
 .branch-user
+
+# 本地 AI 助手项目记忆
+agents.md

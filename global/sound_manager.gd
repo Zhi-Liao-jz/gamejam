@@ -4,20 +4,18 @@ const MAX_PLAYERS: int = 16
 const SFX_VOLUME: float = 1.0
 const PITCH_VARIANCE: float = 0.08
 const OVERLAP_COOLDOWN_MSEC: int = 200
+const SOUNDS: Dictionary = {"boop": "res://assets/sound/boop.ogg"}
 
 var _pool: Array[AudioStreamPlayer] = []
 var _pool_index: int = 0
 
 var _last_played_times: Dictionary = {}
 
-const SOUNDS: Dictionary = {
-	"boop": "res://assets/sound/boop.ogg"
-}
-
 # 运行时程序化合成的占位音（Demo 阶段，无需素材文件）。
 # 取流时优先查这里，没有再回退到 SOUNDS 里的素材路径。
 # 第 2 步用：以后接真音频素材时把对应 key 填进 SOUNDS 即可，调用方不用改。
 var _streams: Dictionary = {}
+
 
 func _ready() -> void:
 	AudioServer.add_bus(1)
@@ -34,20 +32,14 @@ func _ready() -> void:
 static func volume_effects(volume_db):
 	AudioServer.set_bus_volume_db(1, volume_db)
 
+
 # ---------- 程序化占位音（临时，换真素材时整段删掉） ----------
 func _build_placeholder_streams() -> void:
-	# 被篡改：低音量隐约嗡鸣（循环）
-	_streams["gen_tampered"] = _make_tone(200.0, "sine", 0.5, true, 0.18)
-	# 故障：较响低频锯齿 + 轻微调幅，像发电机喘振（循环）
-	_streams["gen_fault"] = _make_tone(80.0, "saw", 0.5, true, 0.5, 6.0)
-	# 警报：880Hz 方波间断哔声（一次性，故障爆发时全局提示）
+	# 警报：880Hz 方波间断哔声（一次性，异常事件全局提示）
 	_streams["alarm"] = _make_tone(880.0, "square", 1.2, false, 0.4, 0.0, 4.0)
-	# 猴子声（第3步）——亭内只靠这些判断外面：脚步=预警，翻找=决策窗口
+	# 猴子声：脚步=预警，翻找=正在交互设备
 	_streams["monkey_step"] = _make_tone(130.0, "square", 0.5, true, 0.22, 0.0, 4.0)
 	_streams["monkey_fiddle"] = _make_tone(420.0, "saw", 0.5, true, 0.28, 9.0)
-	# 接线盒声（第5a步）——音色明显区别于发电机，亭内能听出是哪个设备在响
-	_streams["jbox_tampered"] = _make_tone(330.0, "square", 0.5, true, 0.16, 7.0)  # 继电器嗡鸣
-	_streams["jbox_fault"] = _make_tone(160.0, "saw", 0.5, true, 0.45, 0.0, 8.0)  # 电火花/跳闸噼啪
 
 
 ## 合成一段 16-bit 单声道 PCM 音。loop=true 时按整数周期取样以保证无缝循环。
