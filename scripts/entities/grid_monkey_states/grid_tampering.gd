@@ -20,6 +20,9 @@ func physics_update(delta: float) -> void:
 	if room.role == &"self_destruct":
 		_tamper_self_destruct(delta)
 		return
+	if room.role == &"power":
+		_tamper_power(delta)
+		return
 	# 交货 / 出口面板：面板已被关 → 回潜入重选
 	if not room.panel_open():
 		fsm.transition_to(&"GridSneaking")
@@ -44,3 +47,16 @@ func _tamper_self_destruct(delta: float) -> void:
 		SoundManager.play("alarm")  # 开罩 / 按下都报警一声
 		if armed:
 			fsm.transition_to(&"GridFleeing")
+
+
+## 破坏发电机：蓄力到点切断供电，然后逃跑。
+func _tamper_power(delta: float) -> void:
+	var pw: PowerBox = monkey.room_manager.power
+	if pw == null or not pw.is_attackable():
+		fsm.transition_to(&"GridSneaking")
+		return
+	_t += delta
+	if _t >= monkey.tamper_delay:
+		pw.cut()
+		SoundManager.play("alarm")  # 停电：报警提示
+		fsm.transition_to(&"GridFleeing")

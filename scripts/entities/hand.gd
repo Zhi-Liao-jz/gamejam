@@ -8,6 +8,10 @@ var _held: Product = null
 @onready var room_manager := get_node("../RoomManager") as RoomManager
 
 
+func _ready() -> void:
+	EventBus.subscribe("work_started", _on_work_started)
+
+
 func _process(_delta: float) -> void:
 	if _held:
 		_held.global_position = get_global_mouse_position()
@@ -20,8 +24,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if click == null or click.button_index != MOUSE_BUTTON_LEFT or not click.pressed:
 		return
 	var pos := get_global_mouse_position()
-	# 点击优先级：赶猴子 > 重开面板 > 重置自爆 > 拿放产品（持有产品时也能先处理威胁）
-	if _try_shoo_monkey(pos) or _try_open_panel(pos) or _try_reset_self_destruct(pos):
+	# 点击优先级：赶猴子 > 重开面板 > 重置自爆 > 修发电机 > 拿放产品（持有产品时也能先处理威胁）
+	if (
+		_try_shoo_monkey(pos)
+		or _try_open_panel(pos)
+		or _try_reset_self_destruct(pos)
+		or _try_repair_power(pos)
+	):
 		get_viewport().set_input_as_handled()
 		return
 	if _held:
@@ -65,6 +74,17 @@ func _try_reset_self_destruct(world_pos: Vector2) -> bool:
 	return true
 
 
+## 在右下房间点击发电机（停电时）→ 修复恢复供电；命中返回 true。
+func _try_repair_power(world_pos: Vector2) -> bool:
+	var pw := room_manager.power
+	if pw == null or room_manager.current_room != pw.room_id:
+		return false
+	if not pw.is_repairable() or not pw.global_rect().has_point(world_pos):
+		return false
+	pw.repair()
+	return true
+
+
 func _pick_up() -> void:
 	var room := room_manager.current_room_node()
 	if room == null:
@@ -103,6 +123,13 @@ func _drop_or_deliver() -> void:
 func _clear_held() -> void:
 	_held = null
 	EventBus.push_event("hand_changed", [false, ""])
+
+
+## 新一天开始（结算 / 失败 / 调试跳天后）：清掉手里残留的上一天产品，保持手净。
+func _on_work_started() -> void:
+	if _held:
+		_held.queue_free()
+	_clear_held()
 
 
 func _color_name(key: StringName) -> String:

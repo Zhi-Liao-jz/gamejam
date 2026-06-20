@@ -56,6 +56,10 @@ func pick_target() -> int:
 	var sd := room_manager.self_destruct
 	if sd != null and Game.day >= 3 and sd.is_attackable():
 		candidates.append(sd.room_id)
+	# 第6天起把发电机纳入目标（切断供电瘫痪出口/加热台）；仅当供电正常时
+	var pw := room_manager.power
+	if pw != null and Game.day >= 6 and pw.is_attackable():
+		candidates.append(pw.room_id)
 	if candidates.is_empty():
 		return -1
 	var taken := {}

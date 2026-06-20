@@ -21,6 +21,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _room == null or not Ledger.working_active:
 		return
+	if not Ledger.power_on:
+		return  # 停电 → 加热台停摆，不加热（P6）
 	var over := not _room.panel_open()  # 面板关 = 温控被猴子搞 → 过热
 	if over != _overheating:
 		_overheating = over

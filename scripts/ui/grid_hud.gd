@@ -12,6 +12,8 @@ var _sd_state: int = SelfDestruct.State.PROTECTED  # 中央自爆状态（每帧
 var _sd_remaining: float = 0.0
 var _sd_room: int = -1
 var _heater_room: int = -1  # 加热台房间 id（用于"过热"提示）
+var _power_outage: bool = false  # 是否停电
+var _power_room: int = -1  # 发电机房间 id
 
 @onready var info_label: Label = $InfoLabel
 @onready var summary_panel: Panel = $SummaryPanel
@@ -34,6 +36,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_poll_self_destruct()
+	_poll_power()
 	_refresh_info()
 	queue_redraw()  # 猴子位置 / 面板 / 自爆警告每帧轻量重绘（小地图仅 9 格，开销可忽略）
 
@@ -61,6 +64,8 @@ func _draw() -> void:
 			draw_rect(rect, Color(0.95, 0.30, 0.20), false, 4.0)  # 面板关闭：红框警告
 		if i == _sd_room and _sd_state != SelfDestruct.State.PROTECTED:
 			draw_rect(rect, Color(1.0, 0.10, 0.10), false, 5.0)  # 自爆罩被开 / 倒计时：粗红框
+		if i == _power_room and _power_outage:
+			draw_rect(rect, Color(0.95, 0.35, 0.10), false, 5.0)  # 停电：橙红粗框
 		if monkey_rooms.has(i):
 			draw_circle(top_left + MINIMAP_CELL - Vector2(11.0, 11.0), 5.0, Color(0.62, 0.40, 0.20))
 
@@ -87,6 +92,17 @@ func _poll_self_destruct() -> void:
 		_sd_room = -1
 
 
+## 轮询发电机状态（供 HUD 停电提示 + 小地图警告）。
+func _poll_power() -> void:
+	var pw := get_tree().get_first_node_in_group("power") as PowerBox
+	if pw != null:
+		_power_outage = pw.state == PowerBox.State.OUTAGE
+		_power_room = pw.room_id
+	else:
+		_power_outage = false
+		_power_room = -1
+
+
 func _refresh_info() -> void:
 	var room_name := String(RoomManager.LAYOUT[_current_room]["name"])
 	var monkeys := get_tree().get_nodes_in_group("grid_monkeys").size()
@@ -99,6 +115,8 @@ func _refresh_info() -> void:
 		warn += "\n⚠ 中央玻璃罩被打开！切到中央关上"
 	if _heater_room >= 0 and _closed_panels.has(_heater_room):
 		warn += "\n🔥 加热台过热！切过去重开温控"
+	if _power_outage:
+		warn += "\n⚡ 停电！产品出口 / 加热台停摆，切到右下修复"
 	info_label.text = (
 		(
 			"第 %d 天    存款 $%d\n交货 %d / %d    今日收入 $%d\n监控中：%s    手持：%s\n"

@@ -29,4 +29,7 @@ func _target_valid() -> bool:
 	if room.role == &"self_destruct":
 		var sd: SelfDestruct = monkey.room_manager.self_destruct
 		return sd != null and sd.is_attackable()
+	if room.role == &"power":
+		var pw: PowerBox = monkey.room_manager.power
+		return pw != null and pw.is_attackable()
 	return room.panel_open()
