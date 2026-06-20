@@ -61,8 +61,7 @@ func _try_open_panel(world_pos: Vector2) -> bool:
 	var panel := room.panel_at(world_pos)
 	if panel == null:
 		return false
-	panel.open()
-	return true
+	return panel.start_action(ControlPanel.ACTION_OPEN, BaseDevice.ACTOR_PLAYER, self)
 
 
 ## 点击产品出口面板按钮 → 生成一个产品；失败也消费这次点击，避免误拿面板下的产品。
@@ -73,7 +72,7 @@ func _try_spawn_from_exit(world_pos: Vector2) -> bool:
 	if not room.has_panel() or not room.control_panel.global_rect().has_point(world_pos):
 		return false
 	if product_exit != null:
-		product_exit.try_spawn_product()
+		product_exit.start_action(ProductExit.ACTION_SPAWN, BaseDevice.ACTOR_PLAYER, self)
 	return true
 
 
@@ -84,8 +83,7 @@ func _try_reset_self_destruct(world_pos: Vector2) -> bool:
 		return false
 	if not sd.is_resettable() or not sd.global_rect().has_point(world_pos):
 		return false
-	sd.player_reset()
-	return true
+	return sd.start_action(SelfDestruct.ACTION_RESET, BaseDevice.ACTOR_PLAYER, self)
 
 
 ## 在右下房间点击发电机（停电时）→ 修复恢复供电；命中返回 true。
@@ -95,8 +93,7 @@ func _try_repair_power(world_pos: Vector2) -> bool:
 		return false
 	if not pw.is_repairable() or not pw.global_rect().has_point(world_pos):
 		return false
-	pw.repair()
-	return true
+	return pw.start_action(PowerBox.ACTION_REPAIR_POWER, BaseDevice.ACTOR_PLAYER, self)
 
 
 func _pick_up() -> void:

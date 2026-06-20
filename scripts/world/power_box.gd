@@ -1,14 +1,15 @@
 class_name PowerBox
-extends Node2D
+extends BaseDevice
 ## 发电机 / 接线盒（P6 / 第6-7天，文档模块8 右下）：供电系统。
 ## 猴子第6天起可切断供电 → 停电时产品出口 + 加热台停摆（"部分设备关闭"）。
 ## 玩家切到右下房间点它修复恢复供电。状态镜像到 Ledger.power_on，供出口/加热台读取。
 
 enum State { POWERED, OUTAGE }  # 通电 / 停电
 
+const ACTION_CUT_POWER: StringName = &"cut_power"
+const ACTION_REPAIR_POWER: StringName = &"repair_power"
 const SIZE := Vector2(150.0, 150.0)  # 命中盒 / 视觉尺寸（房间局部坐标）
 
-var room_id: int = -1
 var state: State = State.POWERED
 
 
@@ -19,7 +20,7 @@ func _ready() -> void:
 
 ## 由 RoomManager 在挂载前写入归属房间（右下）。
 func setup(owner_room_id: int) -> void:
-	room_id = owner_room_id
+	setup_device(&"power_box", &"power", owner_room_id)
 
 
 ## 世界坐标命中盒（玩家点击修复用）。
@@ -37,22 +38,46 @@ func is_repairable() -> bool:
 	return state == State.OUTAGE
 
 
+func available_actions(actor: StringName) -> Array[StringName]:
+	if actor == ACTOR_PLAYER and is_repairable():
+		return [ACTION_REPAIR_POWER]
+	if actor == ACTOR_MONKEY and is_attackable():
+		return [ACTION_CUT_POWER]
+	return []
+
+
+func device_state() -> StringName:
+	return &"powered" if state == State.POWERED else &"outage"
+
+
 ## 猴子切断供电。
 func cut() -> void:
-	if state == State.OUTAGE:
-		return
-	state = State.OUTAGE
-	Ledger.power_on = false
-	queue_redraw()
+	start_action(ACTION_CUT_POWER, ACTOR_MONKEY, null)
 
 
 ## 玩家修复供电。
 func repair() -> void:
-	if state == State.POWERED:
-		return
-	state = State.POWERED
-	Ledger.power_on = true
-	queue_redraw()
+	start_action(ACTION_REPAIR_POWER, ACTOR_PLAYER, null)
+
+
+func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
+	match action_id:
+		ACTION_CUT_POWER:
+			if state == State.OUTAGE:
+				return false
+			state = State.OUTAGE
+			Ledger.power_on = false
+			queue_redraw()
+			return true
+		ACTION_REPAIR_POWER:
+			if state == State.POWERED:
+				return false
+			state = State.POWERED
+			Ledger.power_on = true
+			queue_redraw()
+			return true
+		_:
+			return false
 
 
 func _on_work_started() -> void:

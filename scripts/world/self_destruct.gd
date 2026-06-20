@@ -1,15 +1,17 @@
 class_name SelfDestruct
-extends Node2D
+extends BaseDevice
 ## 中央自爆开关（P3 / 第3天，文档模块6）：玻璃罩保护 → 猴子先开罩再按钮 → 倒计时 → 当天失败。
 ## 玩家切到中央房间点它可重置（关罩 / 取消倒计时）。状态走小地图 + HUD 提示。
 ## 倒计时归零只置 Ledger.day_failed 标志，由 DayManager(Working.update) 转入 Failed 状态收尾。
 
 enum State { PROTECTED, EXPOSED, ARMED, TRIGGERED }  # 受保护 / 罩被打开 / 已按下倒计时 / 已引爆
 
+const ACTION_OPEN_COVER: StringName = &"open_cover"
+const ACTION_PRESS_BUTTON: StringName = &"press_button"
+const ACTION_RESET: StringName = &"reset"
 const SIZE := Vector2(140.0, 140.0)  # 命中盒 / 视觉尺寸（房间局部坐标）
 const COUNTDOWN := 8.0  # 按下后到引爆的秒数（= 玩家切到中央取消的窗口）
 
-var room_id: int = -1
 var state: State = State.PROTECTED
 
 var _remaining: float = 0.0
@@ -36,7 +38,7 @@ func _process(delta: float) -> void:
 
 ## 由 RoomManager 在挂载前写入归属房间（中央格）。
 func setup(owner_room_id: int) -> void:
-	room_id = owner_room_id
+	setup_device(&"self_destruct", &"self_destruct", owner_room_id)
 
 
 ## 世界坐标命中盒（玩家点击重置用）。
@@ -59,27 +61,86 @@ func remaining() -> float:
 	return _remaining
 
 
-## 猴子推进一步破坏：受保护→打开罩；罩开→按下按钮(起倒计时)。返回是否已按下（猴子据此逃跑）。
-func sabotage_step() -> bool:
+func available_actions(actor: StringName) -> Array[StringName]:
+	var actions: Array[StringName] = []
+	if actor == ACTOR_PLAYER and is_resettable():
+		actions.append(ACTION_RESET)
+	if actor == ACTOR_MONKEY:
+		if state == State.PROTECTED:
+			actions.append(ACTION_OPEN_COVER)
+		elif state == State.EXPOSED:
+			actions.append(ACTION_PRESS_BUTTON)
+	return actions
+
+
+func device_state() -> StringName:
 	match state:
 		State.PROTECTED:
-			state = State.EXPOSED
-			queue_redraw()
-			return false
+			return &"protected"
 		State.EXPOSED:
-			state = State.ARMED
-			_remaining = COUNTDOWN
-			set_process(true)
-			queue_redraw()
-			return true
+			return &"exposed"
+		State.ARMED:
+			return &"armed"
+		State.TRIGGERED:
+			return &"triggered"
 		_:
-			return true
+			return &"unknown"
+
+
+## 猴子推进一步破坏：受保护→打开罩；罩开→按下按钮(起倒计时)。返回是否已按下（猴子据此逃跑）。
+func sabotage_step() -> bool:
+	if state == State.PROTECTED:
+		start_action(ACTION_OPEN_COVER, ACTOR_MONKEY, null)
+		return false
+	if state == State.EXPOSED:
+		start_action(ACTION_PRESS_BUTTON, ACTOR_MONKEY, null)
+		return true
+	return true
 
 
 ## 玩家重置：关罩 / 取消倒计时 → 回受保护。
 func player_reset() -> void:
+	start_action(ACTION_RESET, ACTOR_PLAYER, null)
+
+
+func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
+	match action_id:
+		ACTION_OPEN_COVER:
+			return _open_cover()
+		ACTION_PRESS_BUTTON:
+			return _press_button()
+		ACTION_RESET:
+			return _reset_protection()
+		_:
+			return false
+
+
+func _open_cover() -> bool:
+	if state != State.PROTECTED:
+		return false
+	state = State.EXPOSED
+	queue_redraw()
+	return true
+
+
+func _press_button() -> bool:
+	if state != State.EXPOSED:
+		return false
+	state = State.ARMED
+	_remaining = COUNTDOWN
+	set_process(true)
+	queue_redraw()
+	return true
+
+
+func _reset_protection() -> bool:
 	if not is_resettable():
-		return
+		return false
+	_force_reset_protection()
+	return true
+
+
+func _force_reset_protection() -> void:
 	state = State.PROTECTED
 	_remaining = 0.0
 	set_process(false)
@@ -87,10 +148,7 @@ func player_reset() -> void:
 
 
 func _on_work_started() -> void:
-	state = State.PROTECTED
-	_remaining = 0.0
-	set_process(false)
-	queue_redraw()
+	_force_reset_protection()
 
 
 func _draw() -> void:
