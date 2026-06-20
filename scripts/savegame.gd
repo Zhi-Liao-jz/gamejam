@@ -4,7 +4,7 @@ extends Resource
 ## 装备 id（equipments）不可重排或复用，否则毁档或静默错位。加字段请配合 save_version 迁移。
 
 const DEFAULT_PATH := "user://savegames"
-const SAVE_VERSION := 2  # 当前存档格式版本号；落盘时显式写入（见 save_to_file）
+const SAVE_VERSION := 3  # 当前存档格式版本号；落盘时显式写入（见 save_to_file）
 
 static var current: Savegame = null
 

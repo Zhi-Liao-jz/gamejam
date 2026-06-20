@@ -4,6 +4,7 @@ extends Control
 const MINIMAP_CELL := Vector2(54.0, 40.0)
 const MINIMAP_GAP := 6.0
 const MINIMAP_ORIGIN := Vector2(20.0, 100.0)  # 小地图左上角（信息条下方）
+const HUD_EQUIPMENT: Array[int] = [Game.EQUIPMENT_SHOCK_TRAP, Game.EQUIPMENT_NET]
 
 var _current_room: int = RoomManager.START_ROOM
 var _held_text: String = "空手"
@@ -120,6 +121,7 @@ func _refresh_info() -> void:
 	info_label.text = (
 		(
 			"第 %d 天    剩余 %s    存款 $%d\n今日利润 $%d    交货 %d / %d    连击 %d    小费 $%d\n监控中：%s    手持：%s\n"
+			+ "装备：%s\n"
 			+ "[WASD] 切监控    [左键] 拿放 / 出口出货 / 重开面板 / 赶猴%s"
 		)
 		% [
@@ -133,6 +135,7 @@ func _refresh_info() -> void:
 			Ledger.current_combo_tip(),
 			room_name,
 			_held_text,
+			_equipment_text(),
 			warn,
 		]
 	)
@@ -200,3 +203,22 @@ func _format_time(seconds: float) -> String:
 	var minutes := total / 60
 	var secs := total % 60
 	return "%02d:%02d" % [minutes, secs]
+
+
+func _equipment_text() -> String:
+	var parts: Array[String] = []
+	for equipment_id: int in HUD_EQUIPMENT:
+		if not Game.has_equipment(equipment_id):
+			parts.append("%s 未拥有" % Game.equipment_name(equipment_id))
+			continue
+		var equipment_status := (
+			"%s %d/%d 补给 %s"
+			% [
+				Game.equipment_name(equipment_id),
+				Game.equipment_count(equipment_id),
+				Game.equipment_max_count(equipment_id),
+				_format_time(Game.equipment_refill_remaining(equipment_id)),
+			]
+		)
+		parts.append(equipment_status)
+	return "    ".join(parts)
