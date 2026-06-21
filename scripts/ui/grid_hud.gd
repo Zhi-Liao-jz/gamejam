@@ -16,6 +16,7 @@ var _heater_state: int = Heater.State.OFF
 var _heater_room: int = -1
 var _power_outage: bool = false  # 是否停电
 var _power_room: int = -1  # 发电机房间 id
+var _power_fault_text: String = ""
 
 @onready var info_label: Label = $InfoLabel
 @onready var summary_panel: Panel = $SummaryPanel
@@ -113,11 +114,13 @@ func _poll_heater() -> void:
 func _poll_power() -> void:
 	var pw := get_tree().get_first_node_in_group("power") as PowerBox
 	if pw != null:
-		_power_outage = pw.state == PowerBox.State.OUTAGE
+		_power_outage = pw.is_outage()
 		_power_room = pw.room_id
+		_power_fault_text = pw.fault_text()
 	else:
 		_power_outage = false
 		_power_room = -1
+		_power_fault_text = ""
 
 
 func _refresh_info() -> void:
@@ -138,7 +141,7 @@ func _refresh_info() -> void:
 	elif _heater_state == Heater.State.BURNED:
 		warn += "\n🔥 加热台产品烧坏！"
 	if _power_outage:
-		warn += "\n⚡ 停电！产品出口 / 加热台停摆，切到右下修复"
+		warn += "\n⚡ %s！产品出口 / 加热台停摆，切到右下修复" % _power_fault_text
 	info_label.text = (
 		(
 			"第 %d 天    剩余 %s    存款 $%d\n今日利润 $%d    交货 %d / %d    连击 %d    小费 $%d\n监控中：%s    手持：%s\n"

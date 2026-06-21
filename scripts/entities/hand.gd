@@ -156,14 +156,15 @@ func _try_reset_self_destruct(world_pos: Vector2) -> bool:
 	return sd.start_action(SelfDestruct.ACTION_RESET, BaseDevice.ACTOR_PLAYER, self)
 
 
-## 在右下房间点击发电机（停电时）→ 修复恢复供电；命中返回 true。
+## 在右下房间点击故障部件（停电时）→ 修复恢复供电；命中返回 true。
 func _try_repair_power(world_pos: Vector2) -> bool:
 	var pw := room_manager.power
 	if pw == null or room_manager.current_room != pw.room_id:
 		return false
-	if not pw.is_repairable() or not pw.global_rect().has_point(world_pos):
+	var action_id := pw.repair_action_at(world_pos)
+	if action_id == &"":
 		return false
-	return pw.start_action(PowerBox.ACTION_REPAIR_POWER, BaseDevice.ACTOR_PLAYER, self)
+	return pw.start_action(action_id, BaseDevice.ACTOR_PLAYER, self)
 
 
 func _heater_at_current_room(world_pos: Vector2) -> Heater:
