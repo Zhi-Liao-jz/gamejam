@@ -33,11 +33,14 @@ func _process(delta: float) -> void:
 	if _room == null or not Ledger.working_active:
 		return
 	_refresh_passive_state()
+	var products_on_surface := _products_on_surface()
+	for product: Product in products_on_surface:
+		product.mark_on_heater_surface()
 	if not Ledger.power_on:
 		return  # 停电 → 加热台停摆，不推进加工 / 烧焦
 	if not _is_heating():
 		return
-	for product: Product in _products_on_surface():
+	for product: Product in products_on_surface:
 		var result := product.advance_heat(delta, _is_overheating())
 		_handle_heat_result(result)
 	_refresh_passive_state()
