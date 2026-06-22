@@ -29,8 +29,11 @@ func global_rect() -> Rect2:
 func available_actions(actor: StringName) -> Array[StringName]:
 	if actor == ACTOR_PLAYER and not is_open:
 		return [ACTION_OPEN]
-	if actor == ACTOR_MONKEY and is_open:
-		return [ACTION_CLOSE]
+	if actor == ACTOR_MONKEY:
+		# 全随机：猴子可能关掉面板，也可能把关上的面板重新打开（§8.2 可坏可修）
+		if is_open:
+			return [ACTION_CLOSE]
+		return [ACTION_OPEN]
 	return []
 
 

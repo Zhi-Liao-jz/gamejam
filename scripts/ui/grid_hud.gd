@@ -5,6 +5,7 @@ const MINIMAP_CELL := Vector2(54.0, 40.0)
 const MINIMAP_GAP := 6.0
 const MINIMAP_ORIGIN := Vector2(20.0, 100.0)  # 小地图左上角（信息条下方）
 const HUD_EQUIPMENT: Array[int] = [Game.EQUIPMENT_SHOCK_TRAP, Game.EQUIPMENT_NET]
+const TRAP_TOAST_DURATION := 2.5  # 电击陷阱触发提示 / 小地图闪烁持续秒数
 
 var _current_room: int = RoomManager.START_ROOM
 var _held_text: String = "空手"
@@ -17,6 +18,8 @@ var _heater_room: int = -1
 var _power_outage: bool = false  # 是否停电
 var _power_room: int = -1  # 发电机房间 id
 var _power_fault_text: String = ""
+var _trap_toast_left: float = 0.0  # 电击陷阱触发提示剩余显示时间
+var _trap_flash_room: int = -1  # 触发陷阱的房间 id（小地图黄框闪烁）
 
 @onready var info_label: Label = $InfoLabel
 @onready var summary_panel: Panel = $SummaryPanel
@@ -31,13 +34,16 @@ func _ready() -> void:
 	EventBus.subscribe("hide_day_summary", _on_hide_day_summary)
 	EventBus.subscribe("panel_changed", _on_panel_changed)
 	EventBus.subscribe("day_failed", _on_day_failed)
+	EventBus.subscribe("shock_trap_triggered", _on_shock_trap_triggered)
 	for i: int in RoomManager.LAYOUT.size():
 		if RoomManager.LAYOUT[i]["role"] == &"heater":
 			_heater_room = i
 	_refresh_info()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if _trap_toast_left > 0.0:
+		_trap_toast_left = maxf(0.0, _trap_toast_left - delta)
 	_poll_self_destruct()
 	_poll_heater()
 	_poll_power()
@@ -72,6 +78,8 @@ func _draw() -> void:
 			draw_rect(rect, Color(0.95, 0.35, 0.10), false, 5.0)  # 停电：橙红粗框
 		if i == _heater_room and _heater_state == Heater.State.BURNED:
 			draw_rect(rect, Color(0.10, 0.10, 0.10), false, 5.0)  # 产品烧坏：黑框
+		if i == _trap_flash_room and _trap_toast_left > 0.0:
+			draw_rect(rect, Color(1.0, 0.95, 0.20), false, 5.0)  # 电击陷阱触发：黄框
 		if monkey_rooms.has(i):
 			draw_circle(top_left + MINIMAP_CELL - Vector2(11.0, 11.0), 5.0, Color(0.62, 0.40, 0.20))
 
@@ -142,6 +150,8 @@ func _refresh_info() -> void:
 		warn += "\n🔥 加热台产品烧坏！"
 	if _power_outage:
 		warn += "\n⚡ %s！产品出口 / 加热台停摆，切到右下修复" % _power_fault_text
+	if _trap_toast_left > 0.0:
+		warn += "\n⚡ 电击陷阱触发！%s 的猴子被打断逃跑" % _trap_flash_room_name()
 	info_label.text = (
 		(
 			"第 %d 天    剩余 %s    存款 $%d\n今日利润 $%d    交货 %d / %d    连击 %d    小费 $%d\n监控中：%s    手持：%s\n"
@@ -181,11 +191,16 @@ func _on_panel_changed(room_id: int, is_open: bool) -> void:
 		_closed_panels[room_id] = true
 
 
+func _on_shock_trap_triggered(room_id: int) -> void:
+	_trap_toast_left = TRAP_TOAST_DURATION
+	_trap_flash_room = room_id
+
+
 func _on_day_summary(data: Dictionary) -> void:
 	summary_panel.visible = true
 	summary_label.text = (
 		(
-			"第 %d 天 完成！\n\n"
+			"✅ 第 %d 天 达标通关！\n\n"
 			+ "交货 %d / %d\n"
 			+ "当前连击 %d\n"
 			+ "基础收益 +$%d\n"
@@ -224,6 +239,12 @@ func _on_day_failed(data: Dictionary) -> void:
 	)
 
 
+func _trap_flash_room_name() -> String:
+	if _trap_flash_room < 0 or _trap_flash_room >= RoomManager.LAYOUT.size():
+		return ""
+	return String(RoomManager.LAYOUT[_trap_flash_room]["name"])
+
+
 func _format_time(seconds: float) -> String:
 	var total := maxi(0, int(ceil(seconds)))
 	var minutes := total / 60
@@ -238,12 +259,14 @@ func _equipment_text() -> String:
 		if not Game.has_equipment(equipment_id):
 			parts.append("%s 未拥有" % Game.equipment_name(equipment_id))
 			continue
+		var usable_tag := "可用" if Game.equipment_count(equipment_id) > 0 else "用尽"
 		var equipment_status := (
-			"%s %d/%d 补给 %s"
+			"%s %d/%d %s 补给 %s"
 			% [
 				Game.equipment_name(equipment_id),
 				Game.equipment_count(equipment_id),
 				Game.equipment_max_count(equipment_id),
+				usable_tag,
 				_format_time(Game.equipment_refill_remaining(equipment_id)),
 			]
 		)
