@@ -90,8 +90,15 @@ func available_actions(actor: StringName) -> Array[StringName]:
 				return [ACTION_RESTART_GENERATOR]
 			State.WIRING_BROKEN:
 				return [ACTION_RECONNECT_WIRING]
-	if actor == ACTOR_MONKEY and is_attackable():
-		return [ACTION_STALL_GENERATOR, ACTION_BREAK_WIRING]
+	if actor == ACTOR_MONKEY:
+		if is_attackable():
+			return [ACTION_STALL_GENERATOR, ACTION_BREAK_WIRING]
+		# 全随机：猴子也可能把故障修好（§8.2 可坏可修）
+		match state:
+			State.GENERATOR_STALLED:
+				return [ACTION_RESTART_GENERATOR]
+			State.WIRING_BROKEN:
+				return [ACTION_RECONNECT_WIRING]
 	return []
 
 

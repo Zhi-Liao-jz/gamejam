@@ -9,6 +9,7 @@ enum State { PROTECTED, EXPOSED, ARMED, TRIGGERED }  # 受保护 / 罩被打开 
 const ACTION_OPEN_COVER: StringName = &"open_cover"
 const ACTION_PRESS_BUTTON: StringName = &"press_button"
 const ACTION_RESET: StringName = &"reset"
+const ACTION_CLOSE_COVER: StringName = &"close_cover"  # 猴子反向操作：关回玻璃罩（仅未按下时）
 const SIZE := Vector2(140.0, 140.0)  # 命中盒 / 视觉尺寸（房间局部坐标）
 const COUNTDOWN := 8.0  # 按下后到引爆的秒数（= 玩家切到中央取消的窗口）
 
@@ -66,10 +67,13 @@ func available_actions(actor: StringName) -> Array[StringName]:
 	if actor == ACTOR_PLAYER and is_resettable():
 		actions.append(ACTION_RESET)
 	if actor == ACTOR_MONKEY:
+		# 全随机：罩开着时，猴子可能按下按钮（升级威胁），也可能把罩关回（§8.2 可坏可修）。
+		# 已按下倒计时（ARMED）猴子无法取消——拆弹只能靠玩家。
 		if state == State.PROTECTED:
 			actions.append(ACTION_OPEN_COVER)
 		elif state == State.EXPOSED:
 			actions.append(ACTION_PRESS_BUTTON)
+			actions.append(ACTION_CLOSE_COVER)
 	return actions
 
 
@@ -113,6 +117,8 @@ func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Nod
 			return _open_cover()
 		ACTION_PRESS_BUTTON:
 			return _press_button()
+		ACTION_CLOSE_COVER:
+			return _close_cover()
 		ACTION_RESET:
 			return _reset_protection()
 		_:
@@ -133,6 +139,15 @@ func _press_button() -> bool:
 	state = State.ARMED
 	_remaining = COUNTDOWN
 	set_process(true)
+	queue_redraw()
+	return true
+
+
+## 猴子反向操作：把打开的玻璃罩关回（仅 EXPOSED；已按下倒计时猴子无此动作，不能取消）。
+func _close_cover() -> bool:
+	if state != State.EXPOSED:
+		return false
+	state = State.PROTECTED
 	queue_redraw()
 	return true
 

@@ -139,9 +139,21 @@ func _trigger_shock_trap(action_id: StringName, actor_node: Node) -> void:
 	has_shock_trap = false
 	queue_redraw()
 	SoundManager.play("alarm")
+	_spawn_shock_spark()  # 特效：设备处火花
+	EventBus.push_event("shock_trap_triggered", [room_id])  # UI 提示：HUD 弹出 + 小地图闪烁
 	interrupt_action(action_id, actor_node)
 	if actor_node != null and actor_node.has_method("interrupt_by_shock_trap"):
 		actor_node.call("interrupt_by_shock_trap", self)
+
+
+## 在设备视觉位置生成一次性电击火花特效。
+func _spawn_shock_spark() -> void:
+	if not has_method("global_rect"):
+		return
+	var spark := ShockSpark.new()
+	add_child(spark)
+	var rect: Rect2 = call("global_rect")
+	spark.global_position = rect.get_center()
 
 
 func _on_device_work_started() -> void:

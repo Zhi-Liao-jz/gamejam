@@ -97,6 +97,7 @@ size_flags_horizontal = 3
 text = "主音量"
 
 [node name="master_volume_slider" type="HSlider" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=1915782249]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
@@ -108,6 +109,7 @@ size_flags_horizontal = 3
 text = "音效音量"
 
 [node name="sound_effects_volume_slider" type="HSlider" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=1923475242]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
@@ -119,6 +121,7 @@ size_flags_horizontal = 3
 text = "音乐音量"
 
 [node name="music_volume_slider" type="HSlider" parent="MarginContainer/VBoxContainer/tabs/audio_/ScrollContainer/MarginContainer/GridContainer" unique_id=2008638120]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
