@@ -15,6 +15,10 @@ func enter(_msg: Dictionary = {}) -> void:
 func update(delta: float) -> void:
 	Game.tick_runtime_equipment(delta)
 	if Ledger.day_failed:
-		fsm.transition_to(&"Failed")  # 自爆引爆 → 当天失败（优先于结算）
+		fsm.transition_to(&"Failed", {"reason": "self_destruct"})  # 自爆引爆 → 当天失败（优先于结算）
 	elif Ledger.tick(delta):
-		fsm.transition_to(&"Settlement")
+		# 时间到：达成今日交货目标才算通关进结算，否则当天失败、重试本日（不解锁、不入账）
+		if Ledger.is_quota_met():
+			fsm.transition_to(&"Settlement")
+		else:
+			fsm.transition_to(&"Failed", {"reason": "quota"})

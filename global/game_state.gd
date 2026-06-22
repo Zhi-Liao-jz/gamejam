@@ -111,9 +111,11 @@ func complete_day(completed_day: int, profit: int) -> void:
 	start_day(mini(completed_day + 1, highest_unlocked_day))
 
 
-## 当天该有几只猴子（难度曲线：每 2 天 +1 只，封顶 MAX_MONKEYS）
+## 当天该有几只猴子：第 1 天 0（保持无猴），第 2 天起随天数递增、封顶 MAX_MONKEYS。
 func monkey_count_today() -> int:
-	return clampi(1 + (day - 1) / 2, 1, MAX_MONKEYS)
+	if day < 2:
+		return 0
+	return clampi(day - 1, 1, MAX_MONKEYS)
 
 
 ## 尝试购买长期装备。成功会扣钱、保存，并初始化运行时数量。

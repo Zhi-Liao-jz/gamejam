@@ -14,6 +14,8 @@ const DAY_UNLOCK_TEXT: Dictionary[int, String] = {
 }
 const SHOP_EQUIPMENT: Array[int] = [Game.EQUIPMENT_SHOCK_TRAP, Game.EQUIPMENT_NET]
 
+var _showing_shop: bool = false  # false=日期列表，true=商店；shop_button 在两者间切换
+
 @onready var money_label: Label = %money_label
 @onready var day_list: VBoxContainer = %day_list
 @onready var shop_button: Button = %shop_button
@@ -22,9 +24,9 @@ const SHOP_EQUIPMENT: Array[int] = [Game.EQUIPMENT_SHOCK_TRAP, Game.EQUIPMENT_NE
 
 
 func _ready() -> void:
-	_build_day_buttons()
-	shop_button.pressed.connect(_on_shop_pressed)
+	shop_button.pressed.connect(_on_shop_toggle)
 	back_button.pressed.connect(_on_back_pressed)
+	_refresh_view()
 
 
 func _build_day_buttons() -> void:
@@ -88,9 +90,20 @@ func _start_day(day: int) -> void:
 	get_tree().change_scene_to_file(MAIN_GRID_SCENE)
 
 
-func _on_shop_pressed() -> void:
-	shop_status.text = "商店：购买结果会立即保存"
-	_build_shop_items()
+## 在"日期列表"和"商店"之间切换当前视图，并同步 shop_button 文案。
+func _refresh_view() -> void:
+	if _showing_shop:
+		_build_shop_items()
+		shop_button.text = "返回选关"
+	else:
+		_build_day_buttons()
+		shop_button.text = "商店"
+
+
+func _on_shop_toggle() -> void:
+	_showing_shop = not _showing_shop
+	shop_status.text = "商店：购买结果会立即保存" if _showing_shop else ""
+	_refresh_view()
 
 
 func _buy_equipment(equipment_id: int) -> void:

@@ -1,13 +1,15 @@
 extends BaseState
-## 2.0 当天失败（P3）：自爆未能阻止 → 本日作废、收入归零，按 [N] 重试本日（天数不变、不入账）。
+## 2.0 当天失败（P3）：自爆未阻止 / 未达交货目标 → 本日作废、收入归零，按 [N] 重试本日（天数不变、不入账）。
+## 失败原因经转入时的 msg.reason 传入（"self_destruct" / "quota"），供 HUD 区分提示文案。
 
 
-func enter(_msg: Dictionary = {}) -> void:
+func enter(msg: Dictionary = {}) -> void:
 	Ledger.working_active = false
 	var data := {
 		"day": Game.day,
 		"delivered": Ledger.delivered_today,
 		"quota": Ledger.quota_today(),
+		"reason": String(msg.get("reason", "self_destruct")),
 	}
 	EventBus.push_event("day_failed", data)
 
