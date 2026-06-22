@@ -224,6 +224,7 @@ func _setup_input() -> void:
 	_bind("next_day", [KEY_N, KEY_ENTER])
 	_bind("select_shock_trap", [KEY_Z])
 	_bind("select_net", [KEY_X])
+	_bind("pause", [KEY_ESCAPE])
 
 
 func _bind(action: StringName, keys: Array) -> void:

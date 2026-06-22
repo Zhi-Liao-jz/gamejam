@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/room_manager.gd" id="1_rm"]
 [ext_resource type="PackedScene" path="res://scenes/room.tscn" id="2_room"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://scenes/grid_monkey.tscn" id="11_monkey"]
 [ext_resource type="Script" path="res://scripts/day/grid_failed.gd" id="12_failed"]
 [ext_resource type="Script" path="res://scripts/debug/debug_jump.gd" id="13_debug"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="14_pause"]
 
 [node name="MainGrid" type="Node2D"]
 
@@ -93,3 +94,6 @@ script = ExtResource("12_failed")
 
 [node name="DebugJump" type="Node" parent="."]
 script = ExtResource("13_debug")
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+script = ExtResource("14_pause")
