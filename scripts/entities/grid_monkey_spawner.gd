@@ -26,16 +26,9 @@ func _on_day_summary(_data: Dictionary) -> void:
 
 
 func _spawn_for_day() -> void:
-	var count := _monkey_count(Game.day)
+	var count := Game.monkey_count_today()  # 单一真相：当天猴子数由 Game 统一计算
 	for i: int in count:
 		_spawn_one(i)
-
-
-## 第几天该有几只猴子：第 1 天 0（P1 保持无猴），之后随天数递增、封顶 3。
-func _monkey_count(day: int) -> int:
-	if day < 2:
-		return 0
-	return clampi(day - 1, 1, 3)
 
 
 func _spawn_one(index: int) -> void:

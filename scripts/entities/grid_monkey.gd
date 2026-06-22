@@ -168,6 +168,7 @@ func global_rect() -> Rect2:
 func play_loop(key: String, pitch: float = 1.0) -> void:
 	if _audio == null:
 		_audio = $Audio
+		_audio.bus = SoundManager.sfx_bus_name()  # 挂到 SFX 总线，跟随"声音"音量（默认场景里是 Master）
 	var stream := SoundManager.get_stream(key)
 	if stream and _audio.stream != stream:
 		_audio.stream = stream

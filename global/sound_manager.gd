@@ -1,6 +1,7 @@
 extends Node
 
 const MAX_PLAYERS: int = 16
+const SFX_BUS_INDEX: int = 1  # 运行时创建的音效总线索引（命名为 "SFX"，受"声音"音量滑条控制）
 const SFX_VOLUME: float = 1.0
 const PITCH_VARIANCE: float = 0.08
 const OVERLAP_COOLDOWN_MSEC: int = 200
@@ -18,10 +19,11 @@ var _streams: Dictionary = {}
 
 
 func _ready() -> void:
-	AudioServer.add_bus(1)
+	AudioServer.add_bus(SFX_BUS_INDEX)
+	AudioServer.set_bus_name(SFX_BUS_INDEX, "SFX")  # 命名后，场景内音源（如猴子）可统一挂到此总线
 	for i in MAX_PLAYERS:
 		var p = AudioStreamPlayer.new()
-		p.bus = AudioServer.get_bus_name(1)
+		p.bus = AudioServer.get_bus_name(SFX_BUS_INDEX)
 		p.volume_db = linear_to_db(SFX_VOLUME)
 		add_child(p)
 		_pool.append(p)
@@ -30,7 +32,12 @@ func _ready() -> void:
 
 
 static func volume_effects(volume_db):
-	AudioServer.set_bus_volume_db(1, volume_db)
+	AudioServer.set_bus_volume_db(SFX_BUS_INDEX, volume_db)
+
+
+## 运行时音效总线名。场景内自带 AudioStreamPlayer 的节点（猴子环境音）据此挂载，跟随"声音"音量。
+func sfx_bus_name() -> String:
+	return AudioServer.get_bus_name(SFX_BUS_INDEX)
 
 
 # ---------- 程序化占位音（临时，换真素材时整段删掉） ----------

@@ -216,9 +216,11 @@ func _on_hide_day_summary() -> void:
 
 func _on_day_failed(data: Dictionary) -> void:
 	summary_panel.visible = true
+	var reason := String(data.get("reason", "self_destruct"))
+	var reason_text := "未达成今日交货目标" if reason == "quota" else "自爆未能阻止"
 	summary_label.text = (
-		"💥 第 %d 天 失败！\n\n自爆未能阻止\n交货 %d / %d\n\n[N] 重试本日"
-		% [data["day"], data["delivered"], data["quota"]]
+		"💥 第 %d 天 失败！\n\n%s\n交货 %d / %d\n\n[N] 重试本日"
+		% [data["day"], reason_text, data["delivered"], data["quota"]]
 	)
 
 

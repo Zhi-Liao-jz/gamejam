@@ -45,8 +45,11 @@ func _finish_device_action() -> void:
 	var device := monkey.action_device
 	var finished_action := monkey.action_id
 	if not device.finish_action(finished_action, BaseDevice.ACTOR_MONKEY, monkey):
-		monkey.clear_current_action()
-		fsm.transition_to(&"GridSneaking")
+		# finish 失败可能是电击陷阱触发——那时 interrupt_by_shock_trap 已把猴子转入 GridFleeing。
+		# 仅当仍停留在本状态才回游荡，否则会把"被电逃跑"覆盖成游荡，陷阱形同虚设。
+		if fsm.current_state == self:
+			monkey.clear_current_action()
+			fsm.transition_to(&"GridSneaking")
 		return
 	SoundManager.play("alarm")
 	monkey.clear_current_action()
