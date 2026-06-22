@@ -52,6 +52,24 @@ func _finish_device_action() -> void:
 			fsm.transition_to(&"GridSneaking")
 		return
 	SoundManager.play("alarm")
+	# 设备可指定确定性后续动作（如自爆：开罩→1 秒后按下）；有则留在原地接着做，不回游荡。
+	var followup := _device_followup(device, finished_action)
+	if followup != &"":
+		monkey.action_device = device
+		monkey.action_id = followup
+		monkey.target_room = monkey.current_room
+		fsm.transition_to(&"GridTampering")
+		return
 	monkey.clear_current_action()
+	# 设备可指定"完成此动作后逃跑"（如自爆按下后逃离现场）。
+	if device.has_method("monkey_flees_after") and device.monkey_flees_after(finished_action):
+		fsm.transition_to(&"GridFleeing")
+		return
 	monkey.target_room = -1
 	fsm.transition_to(&"GridSneaking")
+
+
+func _device_followup(device: BaseDevice, finished_action: StringName) -> StringName:
+	if device.has_method("monkey_followup_action"):
+		return device.monkey_followup_action(finished_action)
+	return &""
