@@ -106,6 +106,9 @@ func current_action_duration() -> float:
 	var duration := action_device.action_duration(action_id, BaseDevice.ACTOR_MONKEY)
 	if duration <= 0.0:
 		duration = base_tamper_delay
+	# 自爆开关的破坏时序是固定设计窗口（5s 开罩 / 1s 按下），不随天数缩放。
+	if action_device.device_type == &"self_destruct":
+		return duration
 	var scale := tamper_delay / base_tamper_delay
 	return maxf(0.5, duration * scale)
 
