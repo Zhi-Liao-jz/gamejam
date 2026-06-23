@@ -39,7 +39,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_shoo_monkey(pos)
 		or _try_open_panel(pos)
 		or _try_spawn_from_exit(pos)
-		or _try_toggle_heater(pos)
+		or _try_open_heater_panel(pos)
 		or _try_reset_self_destruct(pos)
 		or _try_open_generator_panel(pos)
 		or _try_open_wiring_panel(pos)
@@ -132,18 +132,15 @@ func _try_spawn_from_exit(world_pos: Vector2) -> bool:
 	return true
 
 
-## 点击加热台控制区：玩家按当前状态循环切换 关闭 / 正常 / 过热。
-func _try_toggle_heater(world_pos: Vector2) -> bool:
+## 点击加热台控制区 → 弹出加热台激光面板（开关 / 反射镜滑块在面板内调）；命中返回 true。
+func _try_open_heater_panel(world_pos: Vector2) -> bool:
 	var room := room_manager.current_room_node()
 	if room == null or room.role != &"heater":
 		return false
 	var heater := _heater_at_current_room(world_pos)
 	if heater == null:
 		return false
-	var action_id := heater.next_player_action()
-	if action_id == &"":
-		return true
-	heater.start_action(action_id, BaseDevice.ACTOR_PLAYER, self)
+	EventBus.push_event("open_heater_panel")
 	return true
 
 
