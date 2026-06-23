@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/room_manager.gd" id="1_rm"]
 [ext_resource type="PackedScene" path="res://scenes/room.tscn" id="2_room"]
@@ -17,6 +17,9 @@
 [ext_resource type="Script" path="res://scripts/debug/debug_monkey_tuning.gd" id="15_mtune"]
 [ext_resource type="Script" path="res://scripts/ui/generator_panel.gd" id="16_genpanel"]
 [ext_resource type="Script" path="res://scripts/debug/debug_generator_tuning.gd" id="17_gtune"]
+[ext_resource type="Script" path="res://scripts/ui/wiring_panel.gd" id="18_wpanel"]
+[ext_resource type="Script" path="res://scripts/ui/manual.gd" id="19_manual"]
+[ext_resource type="Script" path="res://scripts/debug/debug_wiring_tuning.gd" id="20_wtune"]
 
 [node name="MainGrid" type="Node2D"]
 
@@ -106,6 +109,15 @@ script = ExtResource("16_genpanel")
 
 [node name="DebugGeneratorTuning" type="Node" parent="."]
 script = ExtResource("17_gtune")
+
+[node name="WiringPanel" type="Node" parent="."]
+script = ExtResource("18_wpanel")
+
+[node name="Manual" type="Node" parent="."]
+script = ExtResource("19_manual")
+
+[node name="DebugWiringTuning" type="Node" parent="."]
+script = ExtResource("20_wtune")
 
 [node name="PauseMenu" type="CanvasLayer" parent="."]
 script = ExtResource("14_pause")

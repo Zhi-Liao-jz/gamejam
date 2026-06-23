@@ -62,7 +62,8 @@ const LAYOUT: Array[Dictionary] = [
 
 var current_room: int = START_ROOM
 var self_destruct: SelfDestruct = null  # 中央自爆开关（P3）；猴子破坏 / 玩家重置 / HUD 都用它
-var power: Generator = null  # 发电机（右下）；玩家点击弹面板调参，猴子随机打乱参数
+var power: Generator = null  # 发电机（右下左半）；玩家点击弹面板调参，猴子随机打乱参数
+var wiring: WiringBox = null  # 接线盒（右下右半）；玩家拖拽连线，猴子随机改线
 
 var _rooms: Array[Room] = []
 
@@ -240,7 +241,7 @@ func _build_heater() -> void:
 	heater.position = Vector2.ZERO
 
 
-## 给右下房间挂发电机（代码创建，无需场景）。
+## 给右下房间挂发电机（左半）+ 接线盒（右半）（代码创建，无需场景）。
 func _build_power() -> void:
 	var room := find_room_by_role(&"power")
 	if room == null:
@@ -250,6 +251,11 @@ func _build_power() -> void:
 	room.add_child(gen)
 	gen.position = Vector2.ZERO
 	power = gen
+	var wire := WiringBox.new()
+	wire.setup(room.room_id)
+	room.add_child(wire)
+	wire.position = Vector2.ZERO
+	wiring = wire
 
 
 func _step(dir: Vector2i) -> void:
