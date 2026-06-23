@@ -12,9 +12,18 @@ func enter(msg: Dictionary = {}) -> void:
 		"reason": String(msg.get("reason", "self_destruct")),
 	}
 	EventBus.push_event("day_failed", data)
+	EventBus.subscribe("settlement_retry", _on_retry)
+
+
+func exit() -> void:
+	EventBus.unsubscribe("settlement_retry", _on_retry)
 
 
 func update(_delta: float) -> void:
 	if Input.is_action_just_pressed("next_day"):
-		# 重试本日：转回 Working，其 enter 会 reset_day（清 day_failed/收入）+ work_started（复位面板/猴子/自爆）
-		fsm.transition_to(&"Working")
+		_on_retry()
+
+
+## 重试本日：转回 Working，其 enter 会 reset_day（清 day_failed/收入）+ work_started（复位面板/猴子/自爆）。
+func _on_retry() -> void:
+	fsm.transition_to(&"Working")
