@@ -51,30 +51,33 @@ func current_combo_tip() -> int:
 	return mini(combo_count * COMBO_TIP_STEP, COMBO_TIP_CAP)
 
 
-## 记一次成功交货：基础收益 - 成本 + 连击小费。返回本次利润变化。
+## 产品生成时立即扣除成本（玩家或猴子按出口都调用）。返回本次利润变化（负数）。
+func charge_product_cost(amount: int) -> int:
+	product_cost_today += amount
+	profit_today -= amount
+	return -amount
+
+
+## 记一次成功交货：成本已在生成时扣除，这里只 +基础收益 +连击小费。返回本次利润变化。
 func deliver(product: Product) -> int:
 	var tip := current_combo_tip()
-	var delta := product.base_reward - product.cost + tip
+	var delta := product.base_reward + tip
 	delivered_today += 1
 	base_reward_today += product.base_reward
-	product_cost_today += product.cost
 	combo_tip_today += tip
 	profit_today += delta
 	combo_count += 1
 	return delta
 
 
-## 记一次错误交付：扣成本并中断连击。返回本次利润变化。
-func record_wrong_delivery(product: Product, is_damaged: bool = false) -> int:
-	var delta := -product.cost
-	product_cost_today += product.cost
-	profit_today += delta
+## 记一次错误交付：成本已在生成时扣过，这里只中断连击（不再额外扣成本）。返回本次利润变化（恒 0）。
+func record_wrong_delivery(_product: Product, is_damaged: bool = false) -> int:
 	combo_count = 0
 	if is_damaged:
 		damaged_delivery_today += 1
 	else:
 		wrong_delivery_today += 1
-	return delta
+	return 0
 
 
 ## 当天结算面板使用的数据包。
