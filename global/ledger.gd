@@ -21,9 +21,15 @@ var product_cost_today: int = 0
 var combo_tip_today: int = 0
 var wrong_delivery_today: int = 0
 var damaged_delivery_today: int = 0
+var maintenance_cost_today: int = 0  # 当天累计维护费（发电机输出/温度过高扣，已计入 profit_today）
 var working_active: bool = false  # 当前是否"工作中"阶段（产品出口 / 拿放据此启停）
 var day_failed: bool = false  # 当天是否已失败（自爆引爆触发；DayManager 据此转 Failed）
-var power_on: bool = true  # 供电是否正常（发电机被切断则 false；产品出口/加热台据此停摆）
+
+# 每设备独立供电模型（阶段3）：通电 = 发电机输出在规格内 且 该设备未被接线盒切断（阶段4接入）。
+var generator_powered: bool = true  # 发电机输出是否在规格内（由 Generator 每帧写入）
+var wiring_cut: Dictionary = {}  # device_type(StringName) -> true：被接线盒短路/错接切断的设备
+
+var _maintenance_accum: float = 0.0  # 维护费小数累加器（满 1 才扣 1 进 profit）
 
 
 ## 当天交货目标（难度曲线：每天 +QUOTA_PER_DAY）。
@@ -49,6 +55,23 @@ func roll_product_reward() -> int:
 ## 当前连击数对应的小费；成功交货后才增加连击。
 func current_combo_tip() -> int:
 	return mini(combo_count * COMBO_TIP_STEP, COMBO_TIP_CAP)
+
+
+## 某设备当前是否通电：发电机正常 且 未被接线盒切断。供产品出口 / 加热台读取。
+func is_device_powered(device_type: StringName) -> bool:
+	return generator_powered and not wiring_cut.has(device_type)
+
+
+## 实时扣维护费（发电机每帧按 fee*delta 调用）。小数累加，满 1 单位才进 profit 与明细。
+func charge_maintenance(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	_maintenance_accum += amount
+	var whole := int(_maintenance_accum)
+	if whole > 0:
+		_maintenance_accum -= float(whole)
+		maintenance_cost_today += whole
+		profit_today -= whole
 
 
 ## 产品生成时立即扣除成本（玩家或猴子按出口都调用）。返回本次利润变化（负数）。
@@ -93,6 +116,7 @@ func summary_data() -> Dictionary:
 		"tip": combo_tip_today,
 		"wrong": wrong_delivery_today,
 		"damaged": damaged_delivery_today,
+		"maintenance": maintenance_cost_today,
 	}
 
 
@@ -115,8 +139,11 @@ func reset_day() -> void:
 	combo_tip_today = 0
 	wrong_delivery_today = 0
 	damaged_delivery_today = 0
+	maintenance_cost_today = 0
+	_maintenance_accum = 0.0
 	day_failed = false
-	power_on = true
+	generator_powered = true
+	wiring_cut = {}
 
 
 ## 当天结算：今日利润入 Game 账、推进天数、落盘。

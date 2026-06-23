@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/room_manager.gd" id="1_rm"]
 [ext_resource type="PackedScene" path="res://scenes/room.tscn" id="2_room"]
@@ -15,6 +15,8 @@
 [ext_resource type="Script" path="res://scripts/debug/debug_jump.gd" id="13_debug"]
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="14_pause"]
 [ext_resource type="Script" path="res://scripts/debug/debug_monkey_tuning.gd" id="15_mtune"]
+[ext_resource type="Script" path="res://scripts/ui/generator_panel.gd" id="16_genpanel"]
+[ext_resource type="Script" path="res://scripts/debug/debug_generator_tuning.gd" id="17_gtune"]
 
 [node name="MainGrid" type="Node2D"]
 
@@ -69,7 +71,7 @@ theme_override_font_sizes/font_size = 18
 offset_left = 310.0
 offset_top = 130.0
 offset_right = 810.0
-offset_bottom = 470.0
+offset_bottom = 510.0
 mouse_filter = 2
 
 [node name="Label" type="Label" parent="UI/GridHud/SummaryPanel"]
@@ -98,6 +100,12 @@ script = ExtResource("13_debug")
 
 [node name="DebugMonkeyTuning" type="Node" parent="."]
 script = ExtResource("15_mtune")
+
+[node name="GeneratorPanel" type="Node" parent="."]
+script = ExtResource("16_genpanel")
+
+[node name="DebugGeneratorTuning" type="Node" parent="."]
+script = ExtResource("17_gtune")
 
 [node name="PauseMenu" type="CanvasLayer" parent="."]
 script = ExtResource("14_pause")
