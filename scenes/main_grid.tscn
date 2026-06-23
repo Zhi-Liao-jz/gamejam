@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/room_manager.gd" id="1_rm"]
 [ext_resource type="PackedScene" path="res://scenes/room.tscn" id="2_room"]
@@ -20,6 +20,8 @@
 [ext_resource type="Script" path="res://scripts/ui/wiring_panel.gd" id="18_wpanel"]
 [ext_resource type="Script" path="res://scripts/ui/manual.gd" id="19_manual"]
 [ext_resource type="Script" path="res://scripts/debug/debug_wiring_tuning.gd" id="20_wtune"]
+[ext_resource type="Script" path="res://scripts/ui/heater_panel.gd" id="21_hpanel"]
+[ext_resource type="Script" path="res://scripts/debug/debug_heater_tuning.gd" id="22_htune"]
 
 [node name="MainGrid" type="Node2D"]
 
@@ -118,6 +120,12 @@ script = ExtResource("19_manual")
 
 [node name="DebugWiringTuning" type="Node" parent="."]
 script = ExtResource("20_wtune")
+
+[node name="HeaterPanel" type="Node" parent="."]
+script = ExtResource("21_hpanel")
+
+[node name="DebugHeaterTuning" type="Node" parent="."]
+script = ExtResource("22_htune")
 
 [node name="PauseMenu" type="CanvasLayer" parent="."]
 script = ExtResource("14_pause")

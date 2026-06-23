@@ -24,6 +24,7 @@ Ledger="*res://global/ledger.gd"
 MonkeyTuning="*res://global/monkey_tuning.gd"
 GeneratorTuning="*res://global/generator_tuning.gd"
 WiringTuning="*res://global/wiring_tuning.gd"
+HeaterTuning="*res://global/heater_tuning.gd"
 
 [physics]
 
