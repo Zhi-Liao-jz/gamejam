@@ -93,8 +93,18 @@ func _spawn_product() -> bool:
 		raw
 	)
 	exit_room.add_product(product, _slot_position(waiting))
+	Ledger.charge_product_cost(product.cost)  # 生成即扣成本（玩家或猴子按出口都扣）
+	_spawn_cost_float(product.cost)
 	SoundManager.play("boop")
 	return true
+
+
+## 在出口按钮处弹出 "-N 成本" 上浮提示（仅玩家正监控本房间时可见）。
+func _spawn_cost_float(amount: int) -> void:
+	var float_text := FloatingText.new()
+	add_child(float_text)
+	float_text.global_position = global_rect().get_center()
+	float_text.setup("-%d 成本" % amount)
 
 
 ## 出口房间内第 index 个产品的摆放槽位（底部排布）。
