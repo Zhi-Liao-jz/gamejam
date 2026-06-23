@@ -42,6 +42,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		or _try_toggle_heater(pos)
 		or _try_reset_self_destruct(pos)
 		or _try_open_generator_panel(pos)
+		or _try_open_wiring_panel(pos)
 	):
 		get_viewport().set_input_as_handled()
 		return
@@ -164,6 +165,17 @@ func _try_open_generator_panel(world_pos: Vector2) -> bool:
 	if not gen.global_rect().has_point(world_pos):
 		return false
 	EventBus.push_event("open_generator_panel")
+	return true
+
+
+## 在右下房间点击接线盒 → 弹出接线盒面板（拖拽连线在面板内进行）；命中返回 true。
+func _try_open_wiring_panel(world_pos: Vector2) -> bool:
+	var wire := room_manager.wiring
+	if wire == null or room_manager.current_room != wire.room_id:
+		return false
+	if not wire.global_rect().has_point(world_pos):
+		return false
+	EventBus.push_event("open_wiring_panel")
 	return true
 
 

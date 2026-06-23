@@ -156,6 +156,8 @@ func _refresh_info() -> void:
 		warn += "\n🔥 加热台产品烧坏！"
 	if _power_outage:
 		warn += "\n⚡ %s！产品出口 / 加热台停摆，切到右下点发电机调参" % _power_fault_text
+	if not Ledger.wiring_cut.is_empty():
+		warn += "\n🔌 接线盒故障！部分设备断电，切到右下点接线盒按手册(Tab)还原"
 	if _trap_toast_left > 0.0:
 		warn += "\n⚡ 电击陷阱触发！%s 的猴子被打断逃跑" % _trap_flash_room_name()
 	info_label.text = (
