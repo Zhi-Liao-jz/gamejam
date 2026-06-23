@@ -5,8 +5,7 @@ extends BaseDevice
 ## 激光从左向右，先被 x 较小的反射镜挡下并反射（遮挡规则）。玩家用弹出面板调开关与滑块，猴子随机乱调。
 ## 房间里 3 个加热盘对应 3 个产品槽位：放在某槽的产品按该盘状态加工（正常 10s / 过热 5s，过热熟后 3s 烧焦）。
 
-const ACTION_M_TOGGLE: StringName = &"heater_toggle"
-const ACTION_M_SET_MIRROR: StringName = &"heater_set_mirror"
+const ACTION_M_RANDOMIZE: StringName = &"heater_randomize"
 const EMITTER_COUNT := 6
 const PLATE_COUNT := 3
 const EMPTY_FACTOR := 2.0  # 发射器上方留 LaserGap * 2 空白
@@ -137,11 +136,11 @@ func set_mirror(index: int, value: float) -> void:
 	queue_redraw()
 
 
-## 猴子随机操作总开关 / 反射镜滑块（一次离散动作）。玩家走面板不走此接口。
+## 猴子一次操作 = 随机化总开关 + 全部反射镜（见 _perform_action）。玩家走面板不走此接口。
 func available_actions(actor: StringName) -> Array[StringName]:
 	if actor != ACTOR_MONKEY or not Ledger.working_active or not _is_unlocked():
 		return []
-	return [ACTION_M_TOGGLE, ACTION_M_SET_MIRROR]
+	return [ACTION_M_RANDOMIZE]
 
 
 func device_state() -> StringName:
@@ -162,13 +161,13 @@ func can_install_shock_trap() -> bool:
 
 
 func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
-	match action_id:
-		ACTION_M_TOGGLE:
-			toggle_switch()
-		ACTION_M_SET_MIRROR:
-			set_mirror(randi() % PLATE_COUNT, randf())
-		_:
-			return false
+	if action_id != ACTION_M_RANDOMIZE:
+		return false
+	# 猴子一次操作 = 对每个参数各自等概率随机取值（总开关 + 3 个反射镜高度），无修复偏向。
+	switch_on = randf() < 0.5
+	for j: int in PLATE_COUNT:
+		mirror_heights[j] = randf()
+	queue_redraw()
 	return true
 
 

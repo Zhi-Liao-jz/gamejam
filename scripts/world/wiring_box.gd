@@ -5,7 +5,7 @@ extends BaseDevice
 ## 当前接线与正确接线不一致 = 故障：把某个受供电设备写入 Ledger.wiring_cut；改回正确则恢复。
 ## 注意：接线盒与发电机供电互相独立（is_device_powered = 发电机正常 AND 未被接线盒切断）。
 
-const ACTION_M_REWIRE: StringName = &"wiring_rewire"
+const ACTION_M_RANDOMIZE: StringName = &"wiring_randomize"
 const SIZE := Vector2(150.0, 150.0)  # 命中盒 / 视觉外框（房间局部坐标，占房间右半）
 const OFFSET := Vector2(85.0, 8.0)
 const OK_COLOR := Color(0.30, 0.85, 0.75)
@@ -73,11 +73,11 @@ func right_of(left: int) -> int:
 	return connections.get(left, -1)
 
 
-## 猴子可随机改线（一次离散动作）。玩家走面板不走此接口。
+## 猴子一次操作 = 随机化全部连接（见 _perform_action）。玩家走面板不走此接口。
 func available_actions(actor: StringName) -> Array[StringName]:
 	if actor != ACTOR_MONKEY or not Ledger.working_active:
 		return []
-	return [ACTION_M_REWIRE]
+	return [ACTION_M_RANDOMIZE]
 
 
 func device_state() -> StringName:
@@ -89,15 +89,23 @@ func can_install_shock_trap() -> bool:
 
 
 func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
-	if action_id != ACTION_M_REWIRE:
+	if action_id != ACTION_M_RANDOMIZE:
 		return false
-	# 猴子随机：一半概率乱接一根（造成错接/短路），一半概率拔掉一根。
-	if randf() < 0.5:
-		connect_points(randi() % point_count, randi() % point_count)
-	else:
-		disconnect_left(randi() % point_count)
-	queue_redraw()
+	_randomize_connections()
 	return true
+
+
+## 猴子一次操作：每个左点各自等概率取一个值（不连 / 某个右点），保持一对一约束。
+func _randomize_connections() -> void:
+	connections = {}
+	var used: Dictionary = {}
+	for left: int in point_count:
+		var choice := randi() % (point_count + 1)  # == point_count 表示该左点不连
+		if choice >= point_count or used.has(choice):
+			continue
+		used[choice] = true
+		connections[left] = choice
+	_after_change()
 
 
 ## 每天开局重新随机正确连接并复位为正确。
