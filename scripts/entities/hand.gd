@@ -240,13 +240,34 @@ func _drop_or_deliver() -> void:
 		_clear_held()
 		return
 	# 非交货点房间：把产品放进当前房间
-	room.add_product(_held, room.contents.to_local(get_global_mouse_position()))
+	var drop_pos := get_global_mouse_position()
+	if not _can_drop_product_in_room(room, drop_pos):
+		SoundManager.play("alarm")
+		return
+	room.add_product(_held, room.contents.to_local(drop_pos))
 	_clear_held()
 
 
 func _clear_held() -> void:
 	_held = null
 	EventBus.push_event("hand_changed", [false, ""])
+
+
+func _can_drop_product_in_room(room: Room, world_pos: Vector2) -> bool:
+	if room.role != &"heater":
+		return true
+	var heater := _heater_in_current_room()
+	if heater == null:
+		return true
+	return heater.can_place_product_at(world_pos, _held)
+
+
+func _heater_in_current_room() -> Heater:
+	for device: BaseDevice in room_manager.devices_in_room(room_manager.current_room):
+		var heater := device as Heater
+		if heater != null:
+			return heater
+	return null
 
 
 ## 新一天开始（结算 / 失败 / 调试跳天后）：清掉手里残留的上一天产品，保持手净。
