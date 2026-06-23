@@ -37,6 +37,11 @@ func available_actions(actor: StringName) -> Array[StringName]:
 	return []
 
 
+## 重新打开关上的面板算修复；关掉面板算破坏。
+func monkey_action_is_repair(action_id: StringName) -> bool:
+	return action_id == ACTION_OPEN
+
+
 func device_state() -> StringName:
 	return &"open" if is_open else &"closed"
 

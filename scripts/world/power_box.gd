@@ -102,6 +102,11 @@ func available_actions(actor: StringName) -> Array[StringName]:
 	return []
 
 
+## 还原供电（修发电机 / 接线盒）算修复；制造故障算破坏。
+func monkey_action_is_repair(action_id: StringName) -> bool:
+	return action_id == ACTION_RESTART_GENERATOR or action_id == ACTION_RECONNECT_WIRING
+
+
 func device_state() -> StringName:
 	match state:
 		State.POWERED:

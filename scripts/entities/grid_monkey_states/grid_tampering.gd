@@ -60,13 +60,13 @@ func _finish_device_action() -> void:
 		monkey.target_room = monkey.current_room
 		fsm.transition_to(&"GridTampering")
 		return
+	monkey.note_acted_on(device)  # 方案 B：记冷却，避免立刻回头撤销
 	monkey.clear_current_action()
 	# 设备可指定"完成此动作后逃跑"（如自爆按下后逃离现场）。
 	if device.has_method("monkey_flees_after") and device.monkey_flees_after(finished_action):
 		fsm.transition_to(&"GridFleeing")
 		return
-	monkey.target_room = -1
-	fsm.transition_to(&"GridSneaking")
+	monkey.relocate_after_action()  # 方案 A：得手后强制离开当前房间
 
 
 func _device_followup(device: BaseDevice, finished_action: StringName) -> StringName:
