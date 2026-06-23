@@ -31,7 +31,7 @@ func available_actions(_actor: StringName) -> Array[StringName]:
 func device_state() -> StringName:
 	var exit_room := _available_exit_room()
 	if exit_room == null:
-		if not Ledger.power_on:
+		if not Ledger.is_device_powered(&"product_exit"):
 			return &"offline"
 		return &"disabled"
 	if exit_room.products().size() >= MAX_WAITING:
@@ -116,7 +116,7 @@ func _slot_position(index: int) -> Vector2:
 func _available_exit_room() -> Room:
 	if not Ledger.working_active:
 		return null
-	if not Ledger.power_on:
+	if not Ledger.is_device_powered(&"product_exit"):
 		return null
 	var exit_room := room_manager.find_room_by_role(&"product_exit")
 	if exit_room == null or not exit_room.panel_open():

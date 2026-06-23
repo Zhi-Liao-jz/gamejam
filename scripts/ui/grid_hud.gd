@@ -32,7 +32,7 @@ var _retry_button: Button = null
 
 func _ready() -> void:
 	summary_panel.visible = false
-	summary_label.offset_bottom = 276.0  # 给底部按钮栏腾位置
+	summary_label.offset_bottom = 316.0  # 给底部按钮栏腾位置
 	_build_summary_buttons()
 	EventBus.subscribe("room_changed", _on_room_changed)
 	EventBus.subscribe("hand_changed", _on_hand_changed)
@@ -126,7 +126,7 @@ func _poll_heater() -> void:
 
 ## 轮询发电机状态（供 HUD 停电提示 + 小地图警告）。
 func _poll_power() -> void:
-	var pw := get_tree().get_first_node_in_group("power") as PowerBox
+	var pw := get_tree().get_first_node_in_group("power") as Generator
 	if pw != null:
 		_power_outage = pw.is_outage()
 		_power_room = pw.room_id
@@ -155,7 +155,7 @@ func _refresh_info() -> void:
 	elif _heater_state == Heater.State.BURNED:
 		warn += "\n🔥 加热台产品烧坏！"
 	if _power_outage:
-		warn += "\n⚡ %s！产品出口 / 加热台停摆，切到右下修复" % _power_fault_text
+		warn += "\n⚡ %s！产品出口 / 加热台停摆，切到右下点发电机调参" % _power_fault_text
 	if _trap_toast_left > 0.0:
 		warn += "\n⚡ 电击陷阱触发！%s 的猴子被打断逃跑" % _trap_flash_room_name()
 	info_label.text = (
@@ -187,7 +187,7 @@ func _build_summary_buttons() -> void:
 	_summary_buttons = HBoxContainer.new()
 	_summary_buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	_summary_buttons.add_theme_constant_override("separation", 16)
-	_summary_buttons.position = Vector2(0.0, 284.0)
+	_summary_buttons.position = Vector2(0.0, 324.0)
 	_summary_buttons.size = Vector2(500.0, 44.0)
 	summary_panel.add_child(_summary_buttons)
 	_shop_button = _make_summary_button("🛒 商店", "settlement_shop")
@@ -243,6 +243,7 @@ func _on_day_summary(data: Dictionary) -> void:
 			+ "基础收益 +$%d\n"
 			+ "连击小费 +$%d\n"
 			+ "产品成本 -$%d\n"
+			+ "维护费 -$%d\n"
 			+ "误交 %d    损坏 %d\n"
 			+ "今日利润 $%d\n"
 			+ "存款 $%d → $%d"
@@ -255,6 +256,7 @@ func _on_day_summary(data: Dictionary) -> void:
 			data["base_reward"],
 			data["tip"],
 			data["cost"],
+			data.get("maintenance", 0),
 			data["wrong"],
 			data["damaged"],
 			profit,

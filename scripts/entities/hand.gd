@@ -34,14 +34,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _try_use_selected_equipment(pos):
 		get_viewport().set_input_as_handled()
 		return
-	# 点击优先级：赶猴子 > 重开面板 > 出口按钮 > 加热台 > 重置自爆 > 修发电机 > 拿放产品
+	# 点击优先级：赶猴子 > 重开面板 > 出口按钮 > 加热台 > 重置自爆 > 开发电机面板 > 拿放产品
 	if (
 		_try_shoo_monkey(pos)
 		or _try_open_panel(pos)
 		or _try_spawn_from_exit(pos)
 		or _try_toggle_heater(pos)
 		or _try_reset_self_destruct(pos)
-		or _try_repair_power(pos)
+		or _try_open_generator_panel(pos)
 	):
 		get_viewport().set_input_as_handled()
 		return
@@ -156,15 +156,15 @@ func _try_reset_self_destruct(world_pos: Vector2) -> bool:
 	return sd.start_action(SelfDestruct.ACTION_RESET, BaseDevice.ACTOR_PLAYER, self)
 
 
-## 在右下房间点击故障部件（停电时）→ 修复恢复供电；命中返回 true。
-func _try_repair_power(world_pos: Vector2) -> bool:
-	var pw := room_manager.power
-	if pw == null or room_manager.current_room != pw.room_id:
+## 在右下房间点击发电机 → 弹出发电机面板（调参在面板内进行）；命中返回 true。
+func _try_open_generator_panel(world_pos: Vector2) -> bool:
+	var gen := room_manager.power
+	if gen == null or room_manager.current_room != gen.room_id:
 		return false
-	var action_id := pw.repair_action_at(world_pos)
-	if action_id == &"":
+	if not gen.global_rect().has_point(world_pos):
 		return false
-	return pw.start_action(action_id, BaseDevice.ACTOR_PLAYER, self)
+	EventBus.push_event("open_generator_panel")
+	return true
 
 
 func _heater_at_current_room(world_pos: Vector2) -> Heater:

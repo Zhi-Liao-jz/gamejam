@@ -62,7 +62,7 @@ const LAYOUT: Array[Dictionary] = [
 
 var current_room: int = START_ROOM
 var self_destruct: SelfDestruct = null  # 中央自爆开关（P3）；猴子破坏 / 玩家重置 / HUD 都用它
-var power: PowerBox = null  # 发电机（P6 右下）；猴子切断供电 / 玩家修复
+var power: Generator = null  # 发电机（右下）；玩家点击弹面板调参，猴子随机打乱参数
 
 var _rooms: Array[Room] = []
 
@@ -245,11 +245,11 @@ func _build_power() -> void:
 	var room := find_room_by_role(&"power")
 	if room == null:
 		return
-	var box := PowerBox.new()
-	box.setup(room.room_id)
-	room.add_child(box)
-	box.position = Vector2.ZERO
-	power = box
+	var gen := Generator.new()
+	gen.setup(room.room_id)
+	room.add_child(gen)
+	gen.position = Vector2.ZERO
+	power = gen
 
 
 func _step(dir: Vector2i) -> void:

@@ -36,7 +36,7 @@ func _process(delta: float) -> void:
 	var products_on_surface := _products_on_surface()
 	for product: Product in products_on_surface:
 		product.mark_on_heater_surface()
-	if not Ledger.power_on:
+	if not Ledger.is_device_powered(&"heater"):
 		return  # 停电 → 加热台停摆，不推进加工 / 烧焦
 	if not _is_heating():
 		return
@@ -52,7 +52,7 @@ func available_actions(actor: StringName) -> Array[StringName]:
 		return actions
 	if actor != ACTOR_PLAYER and actor != ACTOR_MONKEY:
 		return actions
-	if not Ledger.power_on:
+	if not Ledger.is_device_powered(&"heater"):
 		return actions
 	if state == State.OFF:
 		actions.append(ACTION_TURN_ON_NORMAL)
@@ -67,7 +67,7 @@ func available_actions(actor: StringName) -> Array[StringName]:
 
 
 func device_state() -> StringName:
-	if not Ledger.power_on:
+	if not Ledger.is_device_powered(&"heater"):
 		return &"offline"
 	var result: StringName = &"off"
 	match state:
@@ -91,7 +91,7 @@ func global_rect() -> Rect2:
 
 
 func next_player_action() -> StringName:
-	if not _is_unlocked() or not Ledger.working_active or not Ledger.power_on:
+	if not _is_unlocked() or not Ledger.working_active or not Ledger.is_device_powered(&"heater"):
 		return &""
 	match state:
 		State.OFF:
@@ -214,7 +214,7 @@ func _done_state_for_mode(is_overheating: bool) -> State:
 
 
 func _state_color() -> Color:
-	if not Ledger.power_on:
+	if not Ledger.is_device_powered(&"heater"):
 		return Color(0.24, 0.24, 0.24)
 	var color := TINT
 	match state:
