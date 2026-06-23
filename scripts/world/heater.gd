@@ -136,6 +136,19 @@ func set_mirror(index: int, value: float) -> void:
 	queue_redraw()
 
 
+## 指定世界坐标是否允许放下产品：每个加热盘最多容纳 1 个产品。
+func can_place_product_at(world_pos: Vector2, ignored_product: Product = null) -> bool:
+	var plate := _plate_at_local(to_local(world_pos))
+	if plate < 0:
+		return true
+	for product: Product in _products_on_surface():
+		if product == ignored_product:
+			continue
+		if _plate_of(product) == plate:
+			return false
+	return true
+
+
 ## 猴子一次操作 = 随机化总开关 + 全部反射镜（见 _perform_action）。玩家走面板不走此接口。
 func available_actions(actor: StringName) -> Array[StringName]:
 	if actor != ACTOR_MONKEY or not Ledger.working_active or not _is_unlocked():
@@ -193,7 +206,10 @@ func _plate_rect(j: int) -> Rect2:
 
 ## 产品落在哪个加热盘上；不在任何盘上返回 -1。
 func _plate_of(product: Product) -> int:
-	var local := to_local(product.global_position)
+	return _plate_at_local(to_local(product.global_position))
+
+
+func _plate_at_local(local: Vector2) -> int:
 	for j: int in PLATE_COUNT:
 		if _plate_rect(j).has_point(local):
 			return j
