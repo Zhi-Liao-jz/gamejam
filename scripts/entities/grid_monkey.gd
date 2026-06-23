@@ -28,6 +28,8 @@ var room_manager: RoomManager = null
 var audio_pitch_base: float = 1.0  # 多猴音高错开防糊，由 spawner 设置
 
 var _audio: AudioStreamPlayer2D = null
+var _recent_device: BaseDevice = null  # 刚作业过的设备（冷却期内不再下手，见 MonkeyTuning.recent_device_lock）
+var _recent_left: float = 0.0  # 上述冷却剩余秒数
 
 @onready var _state_machine: BaseStateMachine = $StateMachine
 
@@ -35,6 +37,14 @@ var _audio: AudioStreamPlayer2D = null
 func _ready() -> void:
 	add_to_group("grid_monkeys")
 	z_index = 50  # 画在房间地面 / 产品 / 面板之上
+
+
+## 逐帧递减"近期设备"冷却（与状态机无关，故放在 _process）。
+func _process(delta: float) -> void:
+	if _recent_left > 0.0:
+		_recent_left -= delta
+		if _recent_left <= 0.0:
+			_recent_device = null
 
 
 ## 按 Game.day 缩放难度（猴子首个出现日为第 2 天，故以 d-2 为基准）。
@@ -86,7 +96,7 @@ func pick_current_room_action() -> bool:
 		return false
 	for _i: int in range(devices.size()):
 		var device := devices.pick_random() as BaseDevice
-		var actions := device.available_actions(BaseDevice.ACTOR_MONKEY)
+		var actions := _monkey_actions_with_bias(device)
 		if actions.is_empty():
 			continue
 		action_device = device
@@ -94,6 +104,32 @@ func pick_current_room_action() -> bool:
 		target_room = current_room
 		return true
 	return false
+
+
+## 设备的猴子动作列表，按"破坏优先"偏好过滤：修复类动作仅以 MonkeyTuning.repair_chance 概率保留。
+## 若过滤后为空（如已坏设备这次不想修），该设备本轮被跳过 → 猴子可能转去别处。
+func _monkey_actions_with_bias(device: BaseDevice) -> Array[StringName]:
+	var result: Array[StringName] = []
+	for a: StringName in device.available_actions(BaseDevice.ACTOR_MONKEY):
+		if device.monkey_action_is_repair(a) and not MonkeyTuning.roll_repair():
+			continue
+		result.append(a)
+	return result
+
+
+## 记录一次刚完成的设备作业，进入冷却期（方案 B：避免立刻回头撤销自己刚做的事）。
+func note_acted_on(device: BaseDevice) -> void:
+	_recent_device = device
+	_recent_left = MonkeyTuning.recent_device_lock
+
+
+## 得手后离开当前房间（方案 A）：按调参要么逃到边缘冷却，要么直接换个新房间继续。
+func relocate_after_action() -> void:
+	if MonkeyTuning.flee_after_action:
+		_state_machine.transition_to(&"GridFleeing")
+		return
+	target_room = pick_wander_room()  # 永远是当前房间以外的房间 → sneaking 会先走过去，不在原地重选
+	_state_machine.transition_to(&"GridSneaking")
 
 
 func has_current_action() -> bool:
@@ -190,6 +226,8 @@ func _monkey_devices_in_room(room_id: int) -> Array[BaseDevice]:
 	for device: BaseDevice in room_manager.interactable_devices_in_room(
 		room_id, BaseDevice.ACTOR_MONKEY
 	):
+		if device == _recent_device and _recent_left > 0.0:
+			continue  # 冷却中：刚动过的设备本轮跳过
 		if _device_unlocked(device):
 			result.append(device)
 	return result

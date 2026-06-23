@@ -41,6 +41,12 @@ func device_state() -> StringName:
 	return &"ready"
 
 
+## 该猴子动作是否属于"修复 / 还原"类（与"破坏"相对）。派生设备覆盖。
+## 供猴子"更爱破坏少修"的概率过滤使用；默认全部视为破坏（总会执行）。
+func monkey_action_is_repair(_action_id: StringName) -> bool:
+	return false
+
+
 ## 开始一个动作，但不立刻执行效果。猴子用它进入可被打断的交互过程。
 func begin_action(action_id: StringName, actor: StringName, actor_node: Node = null) -> bool:
 	if not _can_actor_interact(actor):
