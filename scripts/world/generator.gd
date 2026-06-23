@@ -5,11 +5,7 @@ extends BaseDevice
 ## 玩家通过弹出面板（GeneratorPanel）调参；猴子通过 BaseDevice 动作把参数随机打乱。
 ## 数值默认见 GeneratorTuning（autoload），可由 F2 调试面板实时调整。
 
-const ACTION_M_TOGGLE: StringName = &"gen_toggle"
-const ACTION_M_CLEAR_FUEL: StringName = &"gen_clear_fuel"
-const ACTION_M_ADD_FUEL: StringName = &"gen_add_fuel"
-const ACTION_M_SET_BURN: StringName = &"gen_set_burn"
-const ACTION_M_SET_TURBINE: StringName = &"gen_set_turbine"
+const ACTION_M_RANDOMIZE: StringName = &"gen_randomize"
 
 const SIZE := Vector2(150.0, 150.0)  # 发电机命中盒 / 视觉外框（房间局部坐标，占房间左半）
 const OFFSET := Vector2(-85.0, 8.0)
@@ -142,17 +138,11 @@ func set_adding_fuel(value: bool) -> void:
 	_adding_fuel = value
 
 
-## 猴子可随机操作：开关 / 清空燃料 / 加随机燃料 / 乱调燃烧速率 / 乱调涡轮功率。玩家走面板不走此接口。
+## 猴子一次操作 = 随机化发电机全部参数（见 _perform_action）。玩家走面板不走此接口。
 func available_actions(actor: StringName) -> Array[StringName]:
 	if actor != ACTOR_MONKEY or not Ledger.working_active:
 		return []
-	return [
-		ACTION_M_TOGGLE,
-		ACTION_M_CLEAR_FUEL,
-		ACTION_M_ADD_FUEL,
-		ACTION_M_SET_BURN,
-		ACTION_M_SET_TURBINE,
-	]
+	return [ACTION_M_RANDOMIZE]
 
 
 func device_state() -> StringName:
@@ -168,19 +158,13 @@ func can_install_shock_trap() -> bool:
 
 
 func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
-	match action_id:
-		ACTION_M_TOGGLE:
-			toggle_switch()
-		ACTION_M_CLEAR_FUEL:
-			clear_fuel()
-		ACTION_M_ADD_FUEL:
-			add_fuel(randf_range(20.0, GeneratorTuning.max_fuel_heat))
-		ACTION_M_SET_BURN:
-			set_burn_rate(randf())
-		ACTION_M_SET_TURBINE:
-			set_turbine_power(randf())
-		_:
-			return false
+	if action_id != ACTION_M_RANDOMIZE:
+		return false
+	# 猴子一次操作 = 对每个参数各自等概率随机取值（开关 / 燃料热值 / 燃烧速率 / 涡轮功率），无修复偏向。
+	switch_on = randf() < 0.5
+	set_burn_rate(randf())
+	set_turbine_power(randf())
+	fuel_heat = randf() * GeneratorTuning.max_fuel_heat
 	queue_redraw()
 	return true
 
