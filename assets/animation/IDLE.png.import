@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b46i1jo04u36p"
-path="res://.godot/imported/icon.svg-a87c2e9e775616c1f77d5559fd8eb1e8.ctex"
+uid="uid://df505dn1t6146"
+path="res://.godot/imported/IDLE.png-183c227a886c68a3c1d416a073b33f8f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sound/icon.svg"
-dest_files=["res://.godot/imported/icon.svg-a87c2e9e775616c1f77d5559fd8eb1e8.ctex"]
+source_file="res://assets/animation/IDLE.png"
+dest_files=["res://.godot/imported/IDLE.png-183c227a886c68a3c1d416a073b33f8f.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false
