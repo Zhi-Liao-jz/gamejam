@@ -65,7 +65,7 @@ func pick_wander_room() -> int:
 	if room_manager == null:
 		return -1
 	var candidates: Array[int] = []
-	for i: int in RoomManager.LAYOUT.size():
+	for i: int in room_manager.room_count():
 		if i != current_room:
 			candidates.append(i)
 	if candidates.is_empty():

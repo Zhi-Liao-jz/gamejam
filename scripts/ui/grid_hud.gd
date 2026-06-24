@@ -7,7 +7,7 @@ const MINIMAP_ORIGIN := Vector2(20.0, 100.0)  # 小地图左上角（信息条�
 const HUD_EQUIPMENT: Array[int] = [Game.EQUIPMENT_SHOCK_TRAP, Game.EQUIPMENT_NET]
 const TRAP_TOAST_DURATION := 2.5  # 电击陷阱触发提示 / 小地图闪烁持续秒数
 
-var _current_room: int = RoomManager.START_ROOM
+var _current_room: int = 0
 var _held_text: String = "空手"
 var _closed_panels: Dictionary = {}  # room_id -> true：当前被关闭的面板（小地图红框警告）
 var _sd_state: int = SelfDestruct.State.PROTECTED  # 中央自爆状态（每帧轮询自分组）
@@ -25,6 +25,7 @@ var _summary_buttons: HBoxContainer = null  # 结算面板底部按钮栏（商�
 var _shop_button: Button = null
 var _next_button: Button = null
 var _retry_button: Button = null
+var _room_manager: RoomManager = null
 
 @onready var info_label: Label = $InfoLabel
 @onready var summary_panel: Panel = $SummaryPanel
@@ -42,8 +43,12 @@ func _ready() -> void:
 	EventBus.subscribe("panel_changed", _on_panel_changed)
 	EventBus.subscribe("day_failed", _on_day_failed)
 	EventBus.subscribe("shock_trap_triggered", _on_shock_trap_triggered)
-	for i: int in RoomManager.LAYOUT.size():
-		if RoomManager.LAYOUT[i]["role"] == &"heater":
+	_room_manager = _find_room_manager()
+	if _room_manager != null:
+		_current_room = _room_manager.start_room_id()
+	for i: int in _room_count():
+		var definition := _room_definition(i)
+		if definition != null and definition.role == &"heater":
 			_heater_room = i
 	_refresh_info()
 
@@ -60,9 +65,11 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var monkey_rooms := _monkey_room_set()
-	for i: int in RoomManager.LAYOUT.size():
-		var data: Dictionary = RoomManager.LAYOUT[i]
-		var grid: Vector2i = data["grid"]
+	for i: int in _room_count():
+		var definition := _room_definition(i)
+		if definition == null:
+			continue
+		var grid := definition.grid_pos
 		var top_left := (
 			MINIMAP_ORIGIN
 			+ Vector2(
@@ -70,7 +77,7 @@ func _draw() -> void:
 			)
 		)
 		var rect := Rect2(top_left, MINIMAP_CELL)
-		var color: Color = data["color"]
+		var color := definition.accent
 		var is_current := i == _current_room
 		draw_rect(rect, color if is_current else color.darkened(0.45))
 		if is_current:
@@ -139,7 +146,7 @@ func _poll_power() -> void:
 
 
 func _refresh_info() -> void:
-	var room_name := String(RoomManager.LAYOUT[_current_room]["name"])
+	var room_name := _room_display_name(_current_room)
 	var monkeys := get_tree().get_nodes_in_group("grid_monkeys").size()
 	var warn := ""
 	if not _closed_panels.is_empty() or monkeys > 0:
@@ -284,9 +291,37 @@ func _on_day_failed(data: Dictionary) -> void:
 
 
 func _trap_flash_room_name() -> String:
-	if _trap_flash_room < 0 or _trap_flash_room >= RoomManager.LAYOUT.size():
+	if _trap_flash_room < 0 or _trap_flash_room >= _room_count():
 		return ""
-	return String(RoomManager.LAYOUT[_trap_flash_room]["name"])
+	return _room_display_name(_trap_flash_room)
+
+
+func _find_room_manager() -> RoomManager:
+	return get_tree().get_first_node_in_group("room_manager") as RoomManager
+
+
+func _room_count() -> int:
+	if _room_manager == null:
+		_room_manager = _find_room_manager()
+	if _room_manager == null:
+		return 0
+	return _room_manager.room_count()
+
+
+func _room_definition(room_id: int) -> RoomDefinition:
+	if _room_manager == null:
+		_room_manager = _find_room_manager()
+	if _room_manager == null:
+		return null
+	return _room_manager.room_definition(room_id)
+
+
+func _room_display_name(room_id: int) -> String:
+	if _room_manager == null:
+		_room_manager = _find_room_manager()
+	if _room_manager == null:
+		return ""
+	return _room_manager.room_display_name(room_id)
 
 
 func _format_time(seconds: float) -> String:
