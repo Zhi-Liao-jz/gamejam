@@ -26,10 +26,15 @@ GeneratorTuning="*res://global/generator_tuning.gd"
 WiringTuning="*res://global/wiring_tuning.gd"
 HeaterTuning="*res://global/heater_tuning.gd"
 
+[gui]
+
+theme/custom="uid://c3xp3qp2ek4nk"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"

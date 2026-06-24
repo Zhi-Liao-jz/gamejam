@@ -1,13 +1,13 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://ewq3l7ku8bru"]
 
-[ext_resource type="Script" path="res://scripts/world/room.gd" id="1_room"]
+[ext_resource type="Script" uid="uid://cvb0rhteckqrd" path="res://scripts/world/room.gd" id="1_room"]
 
-[node name="Room" type="Node2D"]
+[node name="Room" type="Node2D" unique_id=1552410663]
 script = ExtResource("1_room")
 
-[node name="Contents" type="Node2D" parent="."]
+[node name="Contents" type="Node2D" parent="." unique_id=1623534661]
 
-[node name="NameLabel" type="Label" parent="."]
+[node name="NameLabel" type="Label" parent="." unique_id=803916272]
 offset_left = -220.0
 offset_top = -142.0
 offset_right = 220.0
