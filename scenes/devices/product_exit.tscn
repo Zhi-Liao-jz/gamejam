@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/product_exit.gd" id="1_product_exit"]
+[ext_resource type="PackedScene" path="res://scenes/product.tscn" id="2_product"]
+
+[node name="ProductExit" type="Node2D"]
+script = ExtResource("1_product_exit")
+product_scene = ExtResource("2_product")
+owner_room_id = 3

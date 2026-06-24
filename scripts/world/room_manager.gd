@@ -59,6 +59,11 @@ const LAYOUT: Array[Dictionary] = [
 ]
 
 @export var room_scene: PackedScene
+@export var control_panel_scene: PackedScene
+@export var self_destruct_scene: PackedScene
+@export var heater_scene: PackedScene
+@export var generator_scene: PackedScene
+@export var wiring_box_scene: PackedScene
 
 var current_room: int = START_ROOM
 var self_destruct: SelfDestruct = null  # 中央自爆开关（P3）；猴子破坏 / 玩家重置 / HUD 都用它
@@ -210,52 +215,64 @@ func _build_rooms() -> void:
 		_rooms.append(room)
 
 
-## 给交货点 + 产品出口房间各挂一个控制面板（代码创建，无需场景）。
+## 给交货点 + 产品出口房间各挂一个控制面板。
 func _build_panels() -> void:
+	if control_panel_scene == null:
+		return
 	for room: Room in _rooms:
 		if room.role == &"delivery" or room.role == &"product_exit":
-			var panel := ControlPanel.new()
+			var panel := control_panel_scene.instantiate() as ControlPanel
+			if panel == null:
+				continue
 			panel.setup(room.room_id, room.role)
 			room.attach_panel(panel, PANEL_LOCAL)
 
 
-## 给中央房间挂自爆开关（代码创建，无需场景）。
+## 给中央房间挂自爆开关。
 func _build_self_destruct() -> void:
 	var room := find_room_by_role(&"self_destruct")
-	if room == null:
+	if room == null or self_destruct_scene == null:
 		return
-	var device := SelfDestruct.new()
+	var device := self_destruct_scene.instantiate() as SelfDestruct
+	if device == null:
+		return
 	device.setup(room.room_id)
 	room.add_child(device)
 	device.position = Vector2.ZERO  # 房间中心
 	self_destruct = device
 
 
-## 给加热台房间挂加热台（代码创建，无需场景）。
+## 给加热台房间挂加热台。
 func _build_heater() -> void:
 	var room := find_room_by_role(&"heater")
-	if room == null:
+	if room == null or heater_scene == null:
 		return
-	var heater := Heater.new()
+	var heater := heater_scene.instantiate() as Heater
+	if heater == null:
+		return
 	room.add_child(heater)
 	heater.position = Vector2.ZERO
 
 
-## 给右下房间挂发电机（左半）+ 接线盒（右半）（代码创建，无需场景）。
+## 给右下房间挂发电机（左半）+ 接线盒（右半）。
 func _build_power() -> void:
 	var room := find_room_by_role(&"power")
 	if room == null:
 		return
-	var gen := Generator.new()
-	gen.setup(room.room_id)
-	room.add_child(gen)
-	gen.position = Vector2.ZERO
-	power = gen
-	var wire := WiringBox.new()
-	wire.setup(room.room_id)
-	room.add_child(wire)
-	wire.position = Vector2.ZERO
-	wiring = wire
+	if generator_scene != null:
+		var gen := generator_scene.instantiate() as Generator
+		if gen != null:
+			gen.setup(room.room_id)
+			room.add_child(gen)
+			gen.position = Vector2.ZERO
+			power = gen
+	if wiring_box_scene != null:
+		var wire := wiring_box_scene.instantiate() as WiringBox
+		if wire != null:
+			wire.setup(room.room_id)
+			room.add_child(wire)
+			wire.position = Vector2.ZERO
+			wiring = wire
 
 
 func _step(dir: Vector2i) -> void:
