@@ -4,63 +4,22 @@ extends Node2D
 ## 这是 2.0 玩法的空间地基——玩家交互 / 猴子寻路 / 产品搬运后续都建在房间体系上。
 ## 监控视角 = 相机只框住当前房间，其它房间在视野外（对应"只能操作当前房间"的核心张力）。
 
-const GRID_COLS := 3
-const GRID_ROWS := 3
-const CELL_GAP := 160.0  # 房间之间的世界间距（够大以保证非当前房间在视野外）
-const START_ROOM := 4  # 默认从中央房间（自爆开关）开始监控
-const PANEL_LOCAL := Vector2(150.0, -95.0)  # 控制面板在房间内的局部位置（右上，避开名字与产品）
-
-# 九宫格布局（数据化，不写死在逻辑里）。grid=(列,行)，行 0 在最上。
-# 数组下标即 room_id，且按行优先排列 → id == grid.y * 3 + grid.x。
-# color_key 仅交货点房间有（red/blue/green），用于产品颜色匹配；颜色后续可每天随机。
-const LAYOUT: Array[Dictionary] = [
-	{"grid": Vector2i(0, 0), "role": &"empty", "name": "左上 · 待定", "color": Color(0.42, 0.44, 0.48)},
-	{
-		"grid": Vector2i(1, 0),
-		"role": &"delivery",
-		"name": "上交货点 · 红",
-		"color": Color(0.86, 0.27, 0.24),
-		"color_key": &"red",
-	},
-	{"grid": Vector2i(2, 0), "role": &"empty", "name": "右上 · 待定", "color": Color(0.42, 0.44, 0.48)},
-	{
-		"grid": Vector2i(0, 1),
-		"role": &"product_exit",
-		"name": "产品出口",
-		"color": Color(0.55, 0.60, 0.66)
-	},
-	{
-		"grid": Vector2i(1, 1),
-		"role": &"self_destruct",
-		"name": "中央自爆开关",
-		"color": Color(0.90, 0.20, 0.18),
-	},
-	{
-		"grid": Vector2i(2, 1),
-		"role": &"delivery",
-		"name": "右交货点 · 蓝",
-		"color": Color(0.26, 0.50, 0.92),
-		"color_key": &"blue",
-	},
-	{"grid": Vector2i(0, 2), "role": &"heater", "name": "加热台", "color": Color(0.92, 0.70, 0.24)},
-	{
-		"grid": Vector2i(1, 2),
-		"role": &"delivery",
-		"name": "下交货点 · 绿",
-		"color": Color(0.30, 0.74, 0.40),
-		"color_key": &"green",
-	},
-	{
-		"grid": Vector2i(2, 2),
-		"role": &"power",
-		"name": "发电机 / 接线盒",
-		"color": Color(0.18, 0.62, 0.58),
-	},
-]
+const DEFAULT_ROOM_LAYOUT := preload("res://params/rooms/default_room_layout.tres")
+const DEFAULT_CONTROL_PANEL_SCENE := preload("res://scenes/devices/control_panel.tscn")
+const DEFAULT_SELF_DESTRUCT_SCENE := preload("res://scenes/devices/self_destruct.tscn")
+const DEFAULT_HEATER_SCENE := preload("res://scenes/devices/heater.tscn")
+const DEFAULT_GENERATOR_SCENE := preload("res://scenes/devices/generator.tscn")
+const DEFAULT_WIRING_BOX_SCENE := preload("res://scenes/devices/wiring_box.tscn")
 
 @export var room_scene: PackedScene
+@export var room_layout: RoomLayoutResource
+@export var control_panel_scene: PackedScene
+@export var self_destruct_scene: PackedScene
+@export var heater_scene: PackedScene
+@export var generator_scene: PackedScene
+@export var wiring_box_scene: PackedScene
 
-var current_room: int = START_ROOM
+var current_room: int = -1
 var self_destruct: SelfDestruct = null  # 中央自爆开关（P3）；猴子破坏 / 玩家重置 / HUD 都用它
 var power: Generator = null  # 发电机（右下左半）；玩家点击弹面板调参，猴子随机打乱参数
 var wiring: WiringBox = null  # 接线盒（右下右半）；玩家拖拽连线，猴子随机改线
@@ -71,7 +30,12 @@ var _rooms: Array[Room] = []
 
 
 func _ready() -> void:
+	add_to_group("room_manager")
 	EventBus.subscribe("work_started", _on_work_started)
+	if room_layout == null:
+		room_layout = DEFAULT_ROOM_LAYOUT
+	_assign_default_scenes()
+	current_room = start_room_id()
 	_build_rooms()
 	_build_panels()
 	_build_self_destruct()
@@ -98,15 +62,22 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## 房间在世界里的中心坐标（供相机吸附 / 音效声像 / 猴子定位用）。
 func room_world_center(room_id: int) -> Vector2:
-	var grid: Vector2i = LAYOUT[room_id]["grid"]
-	var step := Room.CELL_SIZE + Vector2(CELL_GAP, CELL_GAP)
+	var definition := room_definition(room_id)
+	if definition == null:
+		return Vector2.ZERO
+	var step := Room.CELL_SIZE + _layout().cell_gap
+	var grid := definition.grid_pos
 	return Vector2(grid.x * step.x, grid.y * step.y)
 
 
 ## 某房间朝某方向的相邻房间 id；越界返回 -1（供后续猴子在房间图上寻路）。
 func neighbor_in_direction(room_id: int, dir: Vector2i) -> int:
-	var grid: Vector2i = LAYOUT[room_id]["grid"] + dir
-	if grid.x < 0 or grid.x >= GRID_COLS or grid.y < 0 or grid.y >= GRID_ROWS:
+	var definition := room_definition(room_id)
+	if definition == null:
+		return -1
+	var grid := definition.grid_pos + dir
+	var layout := _layout()
+	if grid.x < 0 or grid.x >= layout.grid_cols or grid.y < 0 or grid.y >= layout.grid_rows:
 		return -1
 	return _room_id_at(grid)
 
@@ -121,6 +92,26 @@ func room_node(room_id: int) -> Room:
 ## 当前监控房间节点。
 func current_room_node() -> Room:
 	return room_node(current_room)
+
+
+## 当前布局的起始监控房间 id。
+func start_room_id() -> int:
+	return _layout().start_room
+
+
+## 当前布局的房间数量。
+func room_count() -> int:
+	return _layout().room_count()
+
+
+## 按 id 取房间静态定义；越界返回 null。
+func room_definition(room_id: int) -> RoomDefinition:
+	return _layout().room_at(room_id)
+
+
+## 按 id 取房间显示名称；越界返回空字符串。
+func room_display_name(room_id: int) -> String:
+	return _layout().room_name(room_id)
 
 
 ## 第一个指定用途的房间（如 product_exit）；没有返回 null。
@@ -199,59 +190,77 @@ func next_step_toward(from_id: int, to_id: int) -> int:
 
 
 func _build_rooms() -> void:
-	for i: int in LAYOUT.size():
-		var data: Dictionary = LAYOUT[i]
+	_rooms.resize(room_count())
+	for i: int in room_count():
+		var definition := room_definition(i)
+		if definition == null:
+			continue
 		var room: Room = room_scene.instantiate()
 		add_child(room)
 		room.setup(
-			i, data["grid"], data["role"], data["name"], data["color"], data.get("color_key", &"")
+			i,
+			definition.grid_pos,
+			definition.role,
+			definition.display_name,
+			definition.accent,
+			definition.color_key
 		)
 		room.position = room_world_center(i)
-		_rooms.append(room)
+		_rooms[i] = room
 
 
 ## 给交货点 + 产品出口房间各挂一个控制面板（代码创建，无需场景）。
 func _build_panels() -> void:
 	for room: Room in _rooms:
 		if room.role == &"delivery" or room.role == &"product_exit":
-			var panel := ControlPanel.new()
+			var panel := control_panel_scene.instantiate() as ControlPanel
+			if panel == null:
+				continue
 			panel.setup(room.room_id, room.role)
-			room.attach_panel(panel, PANEL_LOCAL)
+			room.attach_panel(panel, _layout().panel_local)
 
 
-## 给中央房间挂自爆开关（代码创建，无需场景）。
+## 给中央房间挂自爆开关。
 func _build_self_destruct() -> void:
 	var room := find_room_by_role(&"self_destruct")
 	if room == null:
 		return
-	var device := SelfDestruct.new()
+	var device := self_destruct_scene.instantiate() as SelfDestruct
+	if device == null:
+		return
 	device.setup(room.room_id)
 	room.add_child(device)
 	device.position = Vector2.ZERO  # 房间中心
 	self_destruct = device
 
 
-## 给加热台房间挂加热台（代码创建，无需场景）。
+## 给加热台房间挂加热台。
 func _build_heater() -> void:
 	var room := find_room_by_role(&"heater")
 	if room == null:
 		return
-	var heater := Heater.new()
+	var heater := heater_scene.instantiate() as Heater
+	if heater == null:
+		return
 	room.add_child(heater)
 	heater.position = Vector2.ZERO
 
 
-## 给右下房间挂发电机（左半）+ 接线盒（右半）（代码创建，无需场景）。
+## 给右下房间挂发电机（左半）+ 接线盒（右半）。
 func _build_power() -> void:
 	var room := find_room_by_role(&"power")
 	if room == null:
 		return
-	var gen := Generator.new()
+	var gen := generator_scene.instantiate() as Generator
+	if gen == null:
+		return
 	gen.setup(room.room_id)
 	room.add_child(gen)
 	gen.position = Vector2.ZERO
 	power = gen
-	var wire := WiringBox.new()
+	var wire := wiring_box_scene.instantiate() as WiringBox
+	if wire == null:
+		return
 	wire.setup(room.room_id)
 	room.add_child(wire)
 	wire.position = Vector2.ZERO
@@ -259,9 +268,13 @@ func _build_power() -> void:
 
 
 func _step(dir: Vector2i) -> void:
-	var grid: Vector2i = LAYOUT[current_room]["grid"] + dir
-	grid.x = clampi(grid.x, 0, GRID_COLS - 1)
-	grid.y = clampi(grid.y, 0, GRID_ROWS - 1)
+	var definition := room_definition(current_room)
+	if definition == null:
+		return
+	var layout := _layout()
+	var grid := definition.grid_pos + dir
+	grid.x = clampi(grid.x, 0, layout.grid_cols - 1)
+	grid.y = clampi(grid.y, 0, layout.grid_rows - 1)
 	var target := _room_id_at(grid)
 	if target == -1 or target == current_room:
 		return
@@ -275,14 +288,30 @@ func _snap_camera() -> void:
 
 
 func _broadcast_room_changed() -> void:
-	EventBus.push_event("room_changed", [current_room, String(LAYOUT[current_room]["name"])])
+	EventBus.push_event("room_changed", [current_room, room_display_name(current_room)])
 
 
 func _room_id_at(grid: Vector2i) -> int:
-	for i: int in LAYOUT.size():
-		if LAYOUT[i]["grid"] == grid:
-			return i
-	return -1
+	return _layout().room_id_at(grid)
+
+
+func _layout() -> RoomLayoutResource:
+	if room_layout == null:
+		room_layout = DEFAULT_ROOM_LAYOUT
+	return room_layout
+
+
+func _assign_default_scenes() -> void:
+	if control_panel_scene == null:
+		control_panel_scene = DEFAULT_CONTROL_PANEL_SCENE
+	if self_destruct_scene == null:
+		self_destruct_scene = DEFAULT_SELF_DESTRUCT_SCENE
+	if heater_scene == null:
+		heater_scene = DEFAULT_HEATER_SCENE
+	if generator_scene == null:
+		generator_scene = DEFAULT_GENERATOR_SCENE
+	if wiring_box_scene == null:
+		wiring_box_scene = DEFAULT_WIRING_BOX_SCENE
 
 
 func _on_work_started() -> void:

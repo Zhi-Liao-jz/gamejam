@@ -1,0 +1,88 @@
+[gd_resource type="Resource" script_class="RoomLayoutResource" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_layout_resource.gd" id="1_layout"]
+[ext_resource type="Script" path="res://scripts/resources/room_definition.gd" id="2_room"]
+
+[sub_resource type="Resource" id="RoomDefinition_0"]
+script = ExtResource("2_room")
+room_id = 0
+grid_pos = Vector2i(0, 0)
+role = &"empty"
+display_name = "左上 · 待定"
+accent = Color(0.42, 0.44, 0.48, 1)
+
+[sub_resource type="Resource" id="RoomDefinition_1"]
+script = ExtResource("2_room")
+room_id = 1
+grid_pos = Vector2i(1, 0)
+role = &"delivery"
+display_name = "上交货点 · 红"
+accent = Color(0.86, 0.27, 0.24, 1)
+color_key = &"red"
+
+[sub_resource type="Resource" id="RoomDefinition_2"]
+script = ExtResource("2_room")
+room_id = 2
+grid_pos = Vector2i(2, 0)
+role = &"empty"
+display_name = "右上 · 待定"
+accent = Color(0.42, 0.44, 0.48, 1)
+
+[sub_resource type="Resource" id="RoomDefinition_3"]
+script = ExtResource("2_room")
+room_id = 3
+grid_pos = Vector2i(0, 1)
+role = &"product_exit"
+display_name = "产品出口"
+accent = Color(0.55, 0.6, 0.66, 1)
+
+[sub_resource type="Resource" id="RoomDefinition_4"]
+script = ExtResource("2_room")
+room_id = 4
+grid_pos = Vector2i(1, 1)
+role = &"self_destruct"
+display_name = "中央自爆开关"
+accent = Color(0.9, 0.2, 0.18, 1)
+
+[sub_resource type="Resource" id="RoomDefinition_5"]
+script = ExtResource("2_room")
+room_id = 5
+grid_pos = Vector2i(2, 1)
+role = &"delivery"
+display_name = "右交货点 · 蓝"
+accent = Color(0.26, 0.5, 0.92, 1)
+color_key = &"blue"
+
+[sub_resource type="Resource" id="RoomDefinition_6"]
+script = ExtResource("2_room")
+room_id = 6
+grid_pos = Vector2i(0, 2)
+role = &"heater"
+display_name = "加热台"
+accent = Color(0.92, 0.7, 0.24, 1)
+
+[sub_resource type="Resource" id="RoomDefinition_7"]
+script = ExtResource("2_room")
+room_id = 7
+grid_pos = Vector2i(1, 2)
+role = &"delivery"
+display_name = "下交货点 · 绿"
+accent = Color(0.3, 0.74, 0.4, 1)
+color_key = &"green"
+
+[sub_resource type="Resource" id="RoomDefinition_8"]
+script = ExtResource("2_room")
+room_id = 8
+grid_pos = Vector2i(2, 2)
+role = &"power"
+display_name = "发电机 / 接线盒"
+accent = Color(0.18, 0.62, 0.58, 1)
+
+[resource]
+script = ExtResource("1_layout")
+grid_cols = 3
+grid_rows = 3
+cell_gap = Vector2(160, 160)
+start_room = 4
+panel_local = Vector2(150, -95)
+rooms = Array[ExtResource("2_room")]([SubResource("RoomDefinition_0"), SubResource("RoomDefinition_1"), SubResource("RoomDefinition_2"), SubResource("RoomDefinition_3"), SubResource("RoomDefinition_4"), SubResource("RoomDefinition_5"), SubResource("RoomDefinition_6"), SubResource("RoomDefinition_7"), SubResource("RoomDefinition_8")])
