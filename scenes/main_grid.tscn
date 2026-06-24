@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/world/room_manager.gd" id="1_rm"]
 [ext_resource type="PackedScene" path="res://scenes/room.tscn" id="2_room"]
+[ext_resource type="PackedScene" path="res://scenes/devices/product_exit.tscn" id="3_exit"]
 [ext_resource type="Script" path="res://scripts/entities/hand.gd" id="5_hand"]
 [ext_resource type="Script" path="res://scripts/ui/grid_hud.gd" id="6_hud"]
 [ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="7_fsm"]
@@ -13,20 +14,19 @@
 [ext_resource type="Script" path="res://scripts/debug/debug_jump.gd" id="13_debug"]
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="14_pause"]
 [ext_resource type="Script" path="res://scripts/debug/debug_monkey_tuning.gd" id="15_mtune"]
+[ext_resource type="PackedScene" path="res://scenes/ui/generator_panel.tscn" id="16_genpanel"]
 [ext_resource type="Script" path="res://scripts/debug/debug_generator_tuning.gd" id="17_gtune"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wiring_panel.tscn" id="18_wpanel"]
 [ext_resource type="Script" path="res://scripts/ui/manual.gd" id="19_manual"]
 [ext_resource type="Script" path="res://scripts/debug/debug_wiring_tuning.gd" id="20_wtune"]
+[ext_resource type="PackedScene" path="res://scenes/ui/heater_panel.tscn" id="21_hpanel"]
 [ext_resource type="Script" path="res://scripts/debug/debug_heater_tuning.gd" id="22_htune"]
-[ext_resource type="Resource" path="res://params/rooms/default_room_layout.tres" id="23_layout"]
-[ext_resource type="PackedScene" path="res://scenes/devices/product_exit.tscn" id="24_exit"]
-[ext_resource type="PackedScene" path="res://scenes/devices/control_panel.tscn" id="25_panel"]
-[ext_resource type="PackedScene" path="res://scenes/devices/self_destruct.tscn" id="26_self_destruct"]
-[ext_resource type="PackedScene" path="res://scenes/devices/heater.tscn" id="27_heater"]
-[ext_resource type="PackedScene" path="res://scenes/devices/generator.tscn" id="28_generator"]
-[ext_resource type="PackedScene" path="res://scenes/devices/wiring_box.tscn" id="29_wiring"]
-[ext_resource type="PackedScene" path="res://scenes/ui/generator_panel.tscn" id="30_genpanel"]
-[ext_resource type="PackedScene" path="res://scenes/ui/wiring_panel.tscn" id="31_wpanel"]
-[ext_resource type="PackedScene" path="res://scenes/ui/heater_panel.tscn" id="32_hpanel"]
+[ext_resource type="PackedScene" path="res://scenes/devices/control_panel.tscn" id="23_cpanel"]
+[ext_resource type="PackedScene" path="res://scenes/devices/self_destruct.tscn" id="24_self"]
+[ext_resource type="PackedScene" path="res://scenes/devices/heater.tscn" id="25_heater"]
+[ext_resource type="PackedScene" path="res://scenes/devices/generator.tscn" id="26_generator"]
+[ext_resource type="PackedScene" path="res://scenes/devices/wiring_box.tscn" id="27_wiring"]
+[ext_resource type="Resource" path="res://params/rooms/default_room_layout.tres" id="28_layout"]
 
 [node name="MainGrid" type="Node2D"]
 
@@ -43,17 +43,17 @@ color = Color(0.08, 0.09, 0.11, 1)
 [node name="RoomManager" type="Node2D" parent="."]
 script = ExtResource("1_rm")
 room_scene = ExtResource("2_room")
-room_layout = ExtResource("23_layout")
-control_panel_scene = ExtResource("25_panel")
-self_destruct_scene = ExtResource("26_self_destruct")
-heater_scene = ExtResource("27_heater")
-generator_scene = ExtResource("28_generator")
-wiring_box_scene = ExtResource("29_wiring")
+room_layout = ExtResource("28_layout")
+control_panel_scene = ExtResource("23_cpanel")
+self_destruct_scene = ExtResource("24_self")
+heater_scene = ExtResource("25_heater")
+generator_scene = ExtResource("26_generator")
+wiring_box_scene = ExtResource("27_wiring")
 
 [node name="Camera2D" type="Camera2D" parent="RoomManager"]
 zoom = Vector2(2, 2)
 
-[node name="ProductExit" parent="." instance=ExtResource("24_exit")]
+[node name="ProductExit" parent="." instance=ExtResource("3_exit")]
 
 [node name="GridMonkeySpawner" type="Node2D" parent="."]
 script = ExtResource("10_mspawn")
@@ -114,12 +114,12 @@ script = ExtResource("13_debug")
 [node name="DebugMonkeyTuning" type="Node" parent="."]
 script = ExtResource("15_mtune")
 
-[node name="GeneratorPanel" parent="." instance=ExtResource("30_genpanel")]
+[node name="GeneratorPanel" parent="." instance=ExtResource("16_genpanel")]
 
 [node name="DebugGeneratorTuning" type="Node" parent="."]
 script = ExtResource("17_gtune")
 
-[node name="WiringPanel" parent="." instance=ExtResource("31_wpanel")]
+[node name="WiringPanel" parent="." instance=ExtResource("18_wpanel")]
 
 [node name="Manual" type="Node" parent="."]
 script = ExtResource("19_manual")
@@ -127,7 +127,7 @@ script = ExtResource("19_manual")
 [node name="DebugWiringTuning" type="Node" parent="."]
 script = ExtResource("20_wtune")
 
-[node name="HeaterPanel" parent="." instance=ExtResource("32_hpanel")]
+[node name="HeaterPanel" parent="." instance=ExtResource("21_hpanel")]
 
 [node name="DebugHeaterTuning" type="Node" parent="."]
 script = ExtResource("22_htune")
