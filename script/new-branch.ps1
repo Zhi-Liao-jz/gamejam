@@ -82,11 +82,11 @@ if ($Local) {
     Write-Host "[2/5] 切换到 main 分支..."
 
     # 检查是否有未提交的更改
-    git diff --quiet 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
+    $worktreeStatus = git status --porcelain
+    if ($worktreeStatus) {
         $hasChanges = $true
-        Write-Host "[INFO] 检测到未提交的更改，暂存中..."
-        git stash push -m "new-branch-script-auto-stash"
+        Write-Host "[INFO] 检测到未提交或未跟踪的更改，暂存中..."
+        git stash push --include-untracked -m "new-branch-script-auto-stash"
     }
 
     # 获取当前分支
