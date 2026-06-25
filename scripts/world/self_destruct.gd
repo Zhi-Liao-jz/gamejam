@@ -16,11 +16,14 @@ var state: State = State.PROTECTED
 
 var _remaining: float = 0.0
 
+@onready var visual: TextureVisual = $Visual
+
 
 func _ready() -> void:
 	add_to_group("self_destruct")
 	EventBus.subscribe("work_started", _on_work_started)
 	set_process(false)  # 仅 ARMED 倒计时阶段才逐帧
+	_update_visual()
 
 
 func _process(delta: float) -> void:
@@ -33,6 +36,7 @@ func _process(delta: float) -> void:
 		state = State.TRIGGERED
 		set_process(false)
 		Ledger.day_failed = true  # 由 Working.update 据此转 Failed
+		_update_visual()
 		queue_redraw()
 
 
@@ -137,6 +141,7 @@ func _open_cover() -> bool:
 	if state != State.PROTECTED:
 		return false
 	state = State.EXPOSED
+	_update_visual()
 	queue_redraw()
 	return true
 
@@ -147,6 +152,7 @@ func _press_button() -> bool:
 	state = State.ARMED
 	_remaining = COUNTDOWN
 	set_process(true)
+	_update_visual()
 	queue_redraw()
 	return true
 
@@ -162,6 +168,7 @@ func _force_reset_protection() -> void:
 	state = State.PROTECTED
 	_remaining = 0.0
 	set_process(false)
+	_update_visual()
 	queue_redraw()
 
 
@@ -170,6 +177,8 @@ func _on_work_started() -> void:
 
 
 func _draw() -> void:
+	if _has_visual_texture():
+		return
 	var rect := Rect2(-SIZE * 0.5, SIZE)
 	draw_rect(rect, Color(0.30, 0.05, 0.05))  # 底座
 	var btn := Rect2(-SIZE * 0.30, SIZE * 0.6)
@@ -180,3 +189,12 @@ func _draw() -> void:
 	else:
 		draw_rect(rect, Color(0.95, 0.30, 0.20), false, 5.0)  # 罩开 / 危险：红框
 	draw_shock_trap_marker(Vector2(SIZE.x * 0.32, -SIZE.y * 0.32))
+
+
+func _update_visual() -> void:
+	if visual != null:
+		visual.apply_state(device_state())
+
+
+func _has_visual_texture() -> bool:
+	return visual != null and visual.has_texture()

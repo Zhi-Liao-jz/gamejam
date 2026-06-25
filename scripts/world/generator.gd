@@ -19,11 +19,14 @@ var turbine_power: float = 0.5
 
 var _adding_fuel: bool = false  # 面板"添加燃料"按钮按住时为 true，逐帧加燃料
 
+@onready var visual: TextureVisual = $Visual
+
 
 func _ready() -> void:
 	add_to_group("power")
 	EventBus.subscribe("work_started", _on_work_started)
 	_reset_to_default()
+	_update_visual()
 
 
 func _physics_process(delta: float) -> void:
@@ -33,6 +36,7 @@ func _physics_process(delta: float) -> void:
 		return
 	Ledger.generator_powered = is_powered()
 	_apply_maintenance(delta)
+	_update_visual()
 	queue_redraw()
 
 
@@ -114,6 +118,7 @@ func fault_text() -> String:
 
 func toggle_switch() -> void:
 	switch_on = not switch_on
+	_update_visual()
 	queue_redraw()
 
 
@@ -165,6 +170,7 @@ func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Nod
 	set_burn_rate(randf())
 	set_turbine_power(randf())
 	fuel_heat = randf() * GeneratorTuning.max_fuel_heat
+	_update_visual()
 	queue_redraw()
 	return true
 
@@ -172,6 +178,7 @@ func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Nod
 ## 每天开局把发电机配平到"正常通电且温度安全"的默认状态。
 func _on_work_started() -> void:
 	_reset_to_default()
+	_update_visual()
 	queue_redraw()
 
 
@@ -200,6 +207,8 @@ func _apply_maintenance(delta: float) -> void:
 
 
 func _draw() -> void:
+	if _has_visual_texture():
+		return
 	var rect := Rect2(OFFSET - SIZE * 0.5, SIZE)
 	var accent := POWERED_COLOR if is_powered() else OFFLINE_COLOR
 	if not switch_on:
@@ -222,3 +231,12 @@ func _draw() -> void:
 		2.0
 	)
 	draw_shock_trap_marker(OFFSET + Vector2(SIZE.x * 0.34, -SIZE.y * 0.4))
+
+
+func _update_visual() -> void:
+	if visual != null:
+		visual.apply_state(device_state())
+
+
+func _has_visual_texture() -> bool:
+	return visual != null and visual.has_texture()

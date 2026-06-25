@@ -15,10 +15,12 @@ const TRAP_TARGET_OFFSET := Vector2(150.0, -22.0)
 @export var owner_room_id: int = 3
 
 @onready var room_manager := get_node("../RoomManager") as RoomManager
+@onready var visual: TextureVisual = $Visual
 
 
 func _ready() -> void:
 	setup_device(&"product_exit", &"product_exit", owner_room_id)
+	_update_visual()
 	queue_redraw()
 
 
@@ -96,6 +98,7 @@ func _spawn_product() -> bool:
 	Ledger.charge_product_cost(product.cost)  # 生成即扣成本（玩家或猴子按出口都扣）
 	_spawn_cost_float(product.cost)
 	SoundManager.play("boop")
+	_update_visual()
 	return true
 
 
@@ -125,6 +128,8 @@ func _available_exit_room() -> Room:
 
 
 func _draw() -> void:
+	if _has_visual_texture():
+		return
 	var room := room_manager.find_room_by_role(&"product_exit")
 	if room == null:
 		return
@@ -140,3 +145,12 @@ func _draw() -> void:
 	)
 	var marker_pos := target_pos + Vector2(TRAP_TARGET_SIZE.x * 0.34, -TRAP_TARGET_SIZE.y * 0.28)
 	draw_shock_trap_marker(marker_pos)
+
+
+func _update_visual() -> void:
+	if visual != null:
+		visual.apply_state(device_state())
+
+
+func _has_visual_texture() -> bool:
+	return visual != null and visual.has_texture()
