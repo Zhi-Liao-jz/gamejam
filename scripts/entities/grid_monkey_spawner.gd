@@ -2,9 +2,6 @@ extends Node2D
 ## 按天数生成九宫格猴子（第 2 天起）。工作开始(work_started)清场重建、结算(day_summary)清空，
 ## 猴子生命周期集中在此——只在工作阶段存在，结算期无猴。依赖"场景里排在 DayManager 之前"以接住开局事件。
 
-const SPAWN_ROOMS := [0, 2, 8, 6]  # 出生 / 逃跑边缘房间（四角），按序号错开
-const PITCH_BY_INDEX := [1.0, 0.92, 1.08]  # 多猴音高错开防糊
-
 @export var monkey_scene: PackedScene
 
 @onready var room_manager := get_node("../RoomManager") as RoomManager
@@ -34,13 +31,19 @@ func _spawn_for_day() -> void:
 func _spawn_one(index: int) -> void:
 	if monkey_scene == null:
 		return
-	var spawn_room: int = SPAWN_ROOMS[index % SPAWN_ROOMS.size()]
+	var monkey_config := GameConfig.monkey()
+	if monkey_config.spawn_rooms.is_empty():
+		return
+	var spawn_room: int = monkey_config.spawn_rooms[index % monkey_config.spawn_rooms.size()]
 	var m: GridMonkey = monkey_scene.instantiate()
 	# 入树前写好初值：FSM 的首个 enter 在 add_child 时即触发，那时这些必须就位
 	m.room_manager = room_manager
 	m.current_room = spawn_room
 	m.exit_room = spawn_room
-	m.audio_pitch_base = PITCH_BY_INDEX[index % PITCH_BY_INDEX.size()]
+	if not monkey_config.pitch_by_index.is_empty():
+		m.audio_pitch_base = monkey_config.pitch_by_index[
+			index % monkey_config.pitch_by_index.size()
+		]
 	m.apply_day_scaling()
 	m.position = room_manager.room_world_center(spawn_room)
 	add_child(m)

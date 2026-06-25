@@ -4,7 +4,6 @@ extends Control
 const MINIMAP_CELL := Vector2(54.0, 40.0)
 const MINIMAP_GAP := 6.0
 const MINIMAP_ORIGIN := Vector2(20.0, 100.0)  # 小地图左上角（信息条下方）
-const HUD_EQUIPMENT: Array[int] = [Game.EQUIPMENT_SHOCK_TRAP, Game.EQUIPMENT_NET]
 const TRAP_TOAST_DURATION := 2.5  # 电击陷阱触发提示 / 小地图闪烁持续秒数
 
 var _current_room: int = 0
@@ -334,7 +333,7 @@ func _format_time(seconds: float) -> String:
 func _equipment_text() -> String:
 	var parts: Array[String] = []
 	parts.append("当前 %s" % _selected_equipment_text())
-	for equipment_id: int in HUD_EQUIPMENT:
+	for equipment_id: int in GameConfig.equipment().hud_equipment_ids:
 		if not Game.has_equipment(equipment_id):
 			parts.append("%s 未拥有" % Game.equipment_name(equipment_id))
 			continue

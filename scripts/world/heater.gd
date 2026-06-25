@@ -176,7 +176,7 @@ func device_state() -> StringName:
 
 
 func can_install_shock_trap() -> bool:
-	return Game.day >= 5 and super.can_install_shock_trap()
+	return Game.day >= GameConfig.heater().shock_trap_unlock_day and super.can_install_shock_trap()
 
 
 func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
@@ -202,7 +202,7 @@ func _active() -> bool:
 
 
 func _is_unlocked() -> bool:
-	return Game.day >= 4
+	return Game.day >= GameConfig.heater().unlock_day
 
 
 ## 第 j 个加热盘对应的房间局部矩形（把摆放区横向三等分）。
