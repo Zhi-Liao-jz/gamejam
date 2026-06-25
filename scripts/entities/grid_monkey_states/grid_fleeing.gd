@@ -10,6 +10,7 @@ func enter(_msg: Dictionary = {}) -> void:
 	monkey = fsm.get_parent() as GridMonkey
 	_cooldown_left = -1.0
 	monkey.target_room = -1
+	monkey.set_visual_state(&"fleeing")
 	monkey.play_loop("monkey_step", 1.4)  # 脚步调高表现慌乱
 
 

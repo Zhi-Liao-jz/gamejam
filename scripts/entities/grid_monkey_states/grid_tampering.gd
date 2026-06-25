@@ -11,6 +11,7 @@ func enter(_msg: Dictionary = {}) -> void:
 	monkey = fsm.get_parent() as GridMonkey
 	_t = 0.0
 	_duration = 0.0
+	monkey.set_visual_state(&"tampering")
 	if not monkey.has_current_action():
 		fsm.transition_to(&"GridSneaking")
 		return
