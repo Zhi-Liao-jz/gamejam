@@ -16,6 +16,7 @@ var control_panel: ControlPanel = null  # 交货点 / 出口房间的控制面�
 
 @onready var contents: Node2D = $Contents
 @onready var name_label: Label = $NameLabel
+@onready var visual: TextureVisual = $Visual
 
 
 func _ready() -> void:
@@ -112,6 +113,12 @@ func _apply_visual() -> void:
 
 
 func _draw() -> void:
+	if _has_visual_texture():
+		return
 	var rect := Rect2(-CELL_SIZE * 0.5, CELL_SIZE)
 	draw_rect(rect, accent.darkened(0.55))  # 房间地面
 	draw_rect(rect, accent, false, 4.0)  # 边框用主题色
+
+
+func _has_visual_texture() -> bool:
+	return visual != null and visual.has_texture()

@@ -18,11 +18,14 @@ var point_count: int = 4
 var correct: Dictionary = {}  # left_idx(int) -> right_idx(int)：本关正确连接（开局固定，手册截图依据）
 var connections: Dictionary = {}  # left_idx(int) -> right_idx(int)：当前连接
 
+@onready var visual: TextureVisual = $Visual
+
 
 func _ready() -> void:
 	add_to_group("wiring")
 	EventBus.subscribe("work_started", _on_work_started)
 	randomize_for_day()
+	_update_visual()
 
 
 ## 由 RoomManager 在挂载前写入归属房间。设备类型沿用 &"power"（猴子第6天解锁该类型）。
@@ -41,6 +44,7 @@ func randomize_for_day() -> void:
 	correct = _make_random_wiring(point_count)
 	connections = correct.duplicate()
 	_update_wiring_power()
+	_update_visual()
 	queue_redraw()
 
 
@@ -115,6 +119,7 @@ func _on_work_started() -> void:
 
 func _after_change() -> void:
 	_update_wiring_power()
+	_update_visual()
 	queue_redraw()
 	EventBus.push_event("wiring_changed")
 
@@ -155,6 +160,8 @@ func _make_random_wiring(count: int) -> Dictionary:
 
 
 func _draw() -> void:
+	if _has_visual_texture():
+		return
 	var rect := Rect2(OFFSET - SIZE * 0.5, SIZE)
 	var accent := OK_COLOR if is_correct() else FAULT_COLOR
 	draw_rect(rect, Color(0.09, 0.14, 0.14))
@@ -171,3 +178,12 @@ func _draw() -> void:
 		draw_circle(Vector2(lx, top + i * step), 5.0, accent)
 		draw_circle(Vector2(rx, top + i * step), 5.0, accent)
 	draw_shock_trap_marker(OFFSET + Vector2(SIZE.x * 0.34, -SIZE.y * 0.4))
+
+
+func _update_visual() -> void:
+	if visual != null:
+		visual.apply_state(device_state())
+
+
+func _has_visual_texture() -> bool:
+	return visual != null and visual.has_texture()

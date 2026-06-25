@@ -1,9 +1,15 @@
-[gd_scene format=3 uid="uid://ewq3l7ku8bru"]
+[gd_scene load_steps=3 format=3 uid="uid://ewq3l7ku8bru"]
 
 [ext_resource type="Script" uid="uid://cvb0rhteckqrd" path="res://scripts/world/room.gd" id="1_room"]
+[ext_resource type="Script" path="res://scripts/visuals/texture_visual.gd" id="2_visual"]
 
 [node name="Room" type="Node2D" unique_id=1552410663]
 script = ExtResource("1_room")
+
+[node name="Visual" type="Node2D" parent="."]
+script = ExtResource("2_visual")
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
 
 [node name="Contents" type="Node2D" parent="." unique_id=1623534661]
 
