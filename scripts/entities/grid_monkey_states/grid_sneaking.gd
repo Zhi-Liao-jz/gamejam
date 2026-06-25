@@ -9,6 +9,7 @@ func enter(_msg: Dictionary = {}) -> void:
 	monkey = fsm.get_parent() as GridMonkey
 	_pause_left = randf_range(GridMonkey.WANDER_PAUSE_MIN, GridMonkey.WANDER_PAUSE_MAX)
 	monkey.clear_current_action()
+	monkey.set_visual_state(&"sneaking")
 
 
 func physics_update(delta: float) -> void:

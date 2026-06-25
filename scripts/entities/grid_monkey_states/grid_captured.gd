@@ -14,7 +14,7 @@ func enter(msg: Dictionary = {}) -> void:
 	monkey.target_room = -1
 	monkey.clear_current_action()
 	monkey.stop_audio()
-	monkey.queue_redraw()
+	monkey.set_visual_state(&"captured")
 
 
 func physics_update(delta: float) -> void:
@@ -27,4 +27,4 @@ func exit() -> void:
 	if monkey == null:
 		return
 	monkey.is_captured = false
-	monkey.queue_redraw()
+	monkey.set_visual_state(&"normal")
