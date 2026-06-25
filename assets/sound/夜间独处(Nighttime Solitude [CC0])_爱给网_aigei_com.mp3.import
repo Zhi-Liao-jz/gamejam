@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://clx1wo8tomsov"
+path="res://.godot/imported/夜间独处(Nighttime Solitude [CC0])_爱给网_aigei_com.mp3-4b6a94cbe0241aef5d6b371a2287f0d1.mp3str"
+
+[deps]
+
+source_file="res://assets/sound/夜间独处(Nighttime Solitude [CC0])_爱给网_aigei_com.mp3"
+dest_files=["res://.godot/imported/夜间独处(Nighttime Solitude [CC0])_爱给网_aigei_com.mp3-4b6a94cbe0241aef5d6b371a2287f0d1.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

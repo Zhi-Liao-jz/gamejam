@@ -19,13 +19,18 @@ config/icon="res://icon.svg"
 
 EventBus="*res://global/event_bus.gd"
 SoundManager="*res://global/sound_manager.gd"
-GameConfig="*res://global/game_config.gd"
 Game="*res://global/game_state.gd"
 Ledger="*res://global/ledger.gd"
 MonkeyTuning="*res://global/monkey_tuning.gd"
 GeneratorTuning="*res://global/generator_tuning.gd"
 WiringTuning="*res://global/wiring_tuning.gd"
 HeaterTuning="*res://global/heater_tuning.gd"
+GameConfig="*res://global/game_config.gd"
+
+[display]
+
+window/size/mode=2
+window/stretch/mode="viewport"
 
 [gui]
 

@@ -1,6 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://c3xp3qp2ek4nk"]
 
-[ext_resource type="Texture2D" uid="uid://b5u63rpnise5g" path="res://assets/image/精灵-0002.png" id="1_x27uq"]
+[ext_resource type="Texture2D" uid="uid://b5u63rpnise5g" path="res://assets/image/UI.png" id="1_x27uq"]
 [ext_resource type="FontFile" uid="uid://1yty1ior031s" path="res://assets/font/ZCOOLKuaiLe-Regular.ttf" id="2_q4r4s"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q4r4s"]

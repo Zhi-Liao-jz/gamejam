@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://df7sm200w68pq"
+path="res://.godot/imported/[慢]黑暗音乐([SLOW] DarkMusic)_爱给网_aigei_com.mp3-7bfdcd4c59154733d5195aa52b907744.mp3str"
+
+[deps]
+
+source_file="res://assets/sound/[慢]黑暗音乐([SLOW] DarkMusic)_爱给网_aigei_com.mp3"
+dest_files=["res://.godot/imported/[慢]黑暗音乐([SLOW] DarkMusic)_爱给网_aigei_com.mp3-7bfdcd4c59154733d5195aa52b907744.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
