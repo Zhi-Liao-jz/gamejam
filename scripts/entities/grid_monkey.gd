@@ -5,12 +5,6 @@ extends Node2D
 
 const SIZE := Vector2(34.0, 34.0)  # 色块 / 命中盒尺寸（略大于产品便于点击）
 const ARRIVE_EPS := 6.0  # 抵达某房间中心的判定距离
-const WANDER_PAUSE_MIN := 0.6
-const WANDER_PAUSE_MAX := 1.8
-
-@export var base_speed: float = 200.0  # 潜入移动速度 px/s（按天缩放）
-@export var base_tamper_delay: float = 2.0  # 设备动作基准耗时（= 玩家救火窗口）
-@export var base_cooldown: float = 4.0  # 逃跑到边缘后再次出动的冷却秒数
 
 var speed: float = 0.0
 var flee_speed: float = 0.0
@@ -28,7 +22,7 @@ var room_manager: RoomManager = null
 var audio_pitch_base: float = 1.0  # 多猴音高错开防糊，由 spawner 设置
 
 var _audio: AudioStreamPlayer2D = null
-var _recent_device: BaseDevice = null  # 刚作业过的设备（冷却期内不再下手，见 MonkeyTuning.recent_device_lock）
+var _recent_device: BaseDevice = null  # 刚作业过的设备，冷却期内不再下手。
 var _recent_left: float = 0.0  # 上述冷却剩余秒数
 var _visual_state: StringName = &"normal"
 
@@ -52,11 +46,19 @@ func _process(delta: float) -> void:
 
 ## 按 Game.day 缩放难度（猴子首个出现日为第 2 天，故以 d-2 为基准）。
 func apply_day_scaling() -> void:
-	var d := maxi(2, Game.day)
-	speed = base_speed * (1.0 + 0.06 * (d - 2))
-	flee_speed = speed * 1.5  # 逃跑始终快于潜入
-	tamper_delay = maxf(0.8, base_tamper_delay - 0.2 * (d - 2))
-	cooldown = maxf(2.0, base_cooldown - 0.5 * (d - 2))
+	var monkey_config := GameConfig.monkey()
+	var d := maxi(monkey_config.first_monkey_day, Game.day)
+	var day_offset := d - monkey_config.first_monkey_day
+	speed = monkey_config.base_speed * (1.0 + monkey_config.speed_per_day * day_offset)
+	flee_speed = speed * monkey_config.flee_speed_multiplier
+	tamper_delay = maxf(
+		monkey_config.min_tamper_delay,
+		monkey_config.base_tamper_delay - monkey_config.tamper_delay_reduce_per_day * day_offset
+	)
+	cooldown = maxf(
+		monkey_config.min_cooldown,
+		monkey_config.base_cooldown - monkey_config.cooldown_reduce_per_day * day_offset
+	)
 
 
 ## 随机选一个游荡目标房间；防扎堆排除其他活猴的当前目标。
@@ -109,7 +111,7 @@ func pick_current_room_action() -> bool:
 	return false
 
 
-## 设备的猴子动作列表，按"破坏优先"偏好过滤：修复类动作仅以 MonkeyTuning.repair_chance 概率保留。
+## 设备的猴子动作列表，按"破坏优先"偏好过滤：修复类动作按配置概率保留。
 ## 若过滤后为空（如已坏设备这次不想修），该设备本轮被跳过 → 猴子可能转去别处。
 func _monkey_actions_with_bias(device: BaseDevice) -> Array[StringName]:
 	var result: Array[StringName] = []
@@ -144,11 +146,11 @@ func current_action_duration() -> float:
 		return tamper_delay
 	var duration := action_device.action_duration(action_id, BaseDevice.ACTOR_MONKEY)
 	if duration <= 0.0:
-		duration = base_tamper_delay
+		duration = GameConfig.monkey().base_tamper_delay
 	# 自爆开关的破坏时序是固定设计窗口（5s 开罩 / 1s 按下），不随天数缩放。
 	if action_device.device_type == &"self_destruct":
 		return duration
-	var scale := tamper_delay / base_tamper_delay
+	var scale := tamper_delay / GameConfig.monkey().base_tamper_delay
 	return maxf(0.5, duration * scale)
 
 
@@ -246,11 +248,11 @@ func _monkey_devices_in_room(room_id: int) -> Array[BaseDevice]:
 func _device_unlocked(device: BaseDevice) -> bool:
 	match device.device_type:
 		&"self_destruct":
-			return Game.day >= 3
+			return Game.day >= GameConfig.monkey().self_destruct_unlock_day
 		&"heater":
-			return Game.day >= 5
+			return Game.day >= GameConfig.monkey().heater_unlock_day
 		&"power":
-			return Game.day >= 6
+			return Game.day >= GameConfig.monkey().power_unlock_day
 		&"control_panel":
 			return true
 		_:

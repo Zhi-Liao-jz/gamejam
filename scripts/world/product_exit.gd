@@ -4,10 +4,6 @@ extends BaseDevice
 ## 颜色取自当前交货点房间，保证每个产品都有对应交货点。
 
 const ACTION_SPAWN: StringName = &"spawn_product"
-const MAX_WAITING := 4  # 出口房间内最多积压的产品数
-const SLOT_PER_ROW := 4  # 摆放槽位每行数量
-const SLOT_START_X := -180.0  # 出口房间内产品摆放起始 x（房间局部坐标）
-const SLOT_SPACING := 90.0  # 槽位水平间距
 const TRAP_TARGET_SIZE := Vector2(96.0, 54.0)
 const TRAP_TARGET_OFFSET := Vector2(150.0, -22.0)
 
@@ -36,7 +32,7 @@ func device_state() -> StringName:
 		if not Ledger.is_device_powered(&"product_exit"):
 			return &"offline"
 		return &"disabled"
-	if exit_room.products().size() >= MAX_WAITING:
+	if exit_room.products().size() >= GameConfig.product().max_waiting:
 		return &"blocked"
 	return &"ready"
 
@@ -66,7 +62,7 @@ func _can_spawn_product() -> bool:
 	if exit_room == null:
 		return false
 	var waiting := exit_room.products().size()
-	if waiting >= MAX_WAITING:
+	if waiting >= GameConfig.product().max_waiting:
 		return false
 	var targets := room_manager.delivery_rooms()
 	if targets.is_empty():
@@ -79,13 +75,13 @@ func _spawn_product() -> bool:
 	if exit_room == null:
 		return false
 	var waiting := exit_room.products().size()
-	if waiting >= MAX_WAITING:
+	if waiting >= GameConfig.product().max_waiting:
 		return false
 	var targets := room_manager.delivery_rooms()
 	if targets.is_empty():
 		return false
 	var target: Room = targets[randi() % targets.size()]
-	var raw := Game.day >= 4 and randf() < 0.4  # 第4天起约四成产品是生料，需先去加热台
+	var raw := GameConfig.product().should_spawn_raw(Game.day)
 	var product: Product = product_scene.instantiate()
 	product.setup(
 		target.color_key,
@@ -112,8 +108,9 @@ func _spawn_cost_float(amount: int) -> void:
 
 ## 出口房间内第 index 个产品的摆放槽位（底部排布）。
 func _slot_position(index: int) -> Vector2:
-	var col := index % SLOT_PER_ROW
-	return Vector2(SLOT_START_X + col * SLOT_SPACING, 90.0)
+	var product_config := GameConfig.product()
+	var col := index % product_config.slot_per_row
+	return Vector2(product_config.slot_start_x + col * product_config.slot_spacing, 90.0)
 
 
 func _available_exit_room() -> Room:

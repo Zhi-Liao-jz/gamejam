@@ -3,9 +3,6 @@ extends Node2D
 ## 待搬运的产品：有颜色、成本和收益。部分产品是"生料"，需先在加热台加工才能交货。
 
 const SIZE := Vector2(60.0, 60.0)
-const NORMAL_HEAT_TIME := 10.0  # 正常加热加工完成所需秒数
-const OVERHEAT_HEAT_TIME := 5.0  # 过热加热加工完成所需秒数
-const OVERHEAT_BURN_TIME := 3.0  # 过热加工完成后继续停留多久会烧焦
 const HEAT_RESULT_NONE: StringName = &""
 const HEAT_RESULT_PROCESSED: StringName = &"processed"
 const HEAT_RESULT_BURNED: StringName = &"burned"
@@ -98,7 +95,10 @@ func advance_heat(delta: float, is_overheating: bool) -> StringName:
 	if is_processed:
 		return _advance_processed_heat(delta, is_overheating)
 	heat_progress += delta
-	var target_time := OVERHEAT_HEAT_TIME if is_overheating else NORMAL_HEAT_TIME
+	var product_config := GameConfig.product()
+	var target_time := (
+		product_config.overheat_heat_time if is_overheating else product_config.normal_heat_time
+	)
 	if heat_progress < target_time:
 		_update_visual()
 		queue_redraw()
@@ -131,7 +131,9 @@ func _draw() -> void:
 	draw_rect(rect, tint)
 	if heated:
 		draw_rect(rect, Color(1.0, 0.55, 0.10), false, 3.0)  # 橙边 = 已熟可交货
-		var burn_frac := clampf(overheat_wait_time / OVERHEAT_BURN_TIME, 0.0, 1.0)
+		var burn_frac := clampf(
+			overheat_wait_time / GameConfig.product().overheat_burn_time, 0.0, 1.0
+		)
 		if burn_frac > 0.0 and _is_heat_visual_active():
 			_draw_progress(burn_frac, Color(0.95, 0.20, 0.10))  # 烧焦倒计时：快拿走
 	else:
@@ -151,7 +153,7 @@ func _advance_processed_heat(delta: float, is_overheating: bool) -> StringName:
 		queue_redraw()
 		return HEAT_RESULT_NONE
 	overheat_wait_time += delta
-	if overheat_wait_time < OVERHEAT_BURN_TIME:
+	if overheat_wait_time < GameConfig.product().overheat_burn_time:
 		_update_visual()
 		queue_redraw()
 		return HEAT_RESULT_NONE
@@ -163,7 +165,12 @@ func _advance_processed_heat(delta: float, is_overheating: bool) -> StringName:
 
 
 func _heat_fraction() -> float:
-	var target_time := OVERHEAT_HEAT_TIME if is_overheat_processing else NORMAL_HEAT_TIME
+	var product_config := GameConfig.product()
+	var target_time := (
+		product_config.overheat_heat_time
+		if is_overheat_processing
+		else product_config.normal_heat_time
+	)
 	return heat_progress / target_time
 
 

@@ -10,7 +10,6 @@ const ACTION_OPEN_COVER: StringName = &"open_cover"
 const ACTION_PRESS_BUTTON: StringName = &"press_button"
 const ACTION_RESET: StringName = &"reset"
 const SIZE := Vector2(140.0, 140.0)  # 命中盒 / 视觉尺寸（房间局部坐标）
-const COUNTDOWN := 8.0  # 按下后到引爆的秒数（= 玩家切到中央取消的窗口）
 
 var state: State = State.PROTECTED
 
@@ -84,9 +83,9 @@ func action_duration(action_id: StringName, actor: StringName) -> float:
 	if actor == ACTOR_MONKEY:
 		match action_id:
 			ACTION_OPEN_COVER:
-				return 5.0
+				return GameConfig.self_destruct().open_cover_duration
 			ACTION_PRESS_BUTTON:
-				return 1.0
+				return GameConfig.self_destruct().press_button_duration
 	return super.action_duration(action_id, actor)
 
 
@@ -117,7 +116,10 @@ func device_state() -> StringName:
 
 
 func can_install_shock_trap() -> bool:
-	return Game.day >= 3 and super.can_install_shock_trap()
+	return (
+		Game.day >= GameConfig.self_destruct().shock_trap_unlock_day
+		and super.can_install_shock_trap()
+	)
 
 
 ## 玩家重置：关罩 / 取消倒计时 → 回受保护。
@@ -150,7 +152,7 @@ func _press_button() -> bool:
 	if state != State.EXPOSED:
 		return false
 	state = State.ARMED
-	_remaining = COUNTDOWN
+	_remaining = GameConfig.self_destruct().countdown
 	set_process(true)
 	_update_visual()
 	queue_redraw()

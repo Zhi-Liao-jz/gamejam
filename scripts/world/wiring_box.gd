@@ -11,9 +11,6 @@ const OFFSET := Vector2(85.0, 8.0)
 const OK_COLOR := Color(0.30, 0.85, 0.75)
 const FAULT_COLOR := Color(0.95, 0.72, 0.16)
 
-# 受接线盒供电影响的设备类型（短路/错接时从中随机挑一个断电）。
-const AFFECTED: Array[StringName] = [&"product_exit", &"heater"]
-
 var point_count: int = 4
 var correct: Dictionary = {}  # left_idx(int) -> right_idx(int)：本关正确连接（开局固定，手册截图依据）
 var connections: Dictionary = {}  # left_idx(int) -> right_idx(int)：当前连接
@@ -89,7 +86,7 @@ func device_state() -> StringName:
 
 
 func can_install_shock_trap() -> bool:
-	return Game.day >= 6 and super.can_install_shock_trap()
+	return Game.day >= GameConfig.wiring().shock_trap_unlock_day and super.can_install_shock_trap()
 
 
 func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
@@ -127,15 +124,17 @@ func _after_change() -> void:
 ## 接线正确 → 清掉接线盒造成的断电；错误 → 确保有一个受影响设备处于断电（每次随机）。
 func _update_wiring_power() -> void:
 	if is_correct():
-		for t: StringName in AFFECTED:
+		for t: StringName in GameConfig.wiring().affected_devices:
 			Ledger.wiring_cut.erase(t)
 		return
 	if not _any_affected_cut():
-		Ledger.wiring_cut[AFFECTED[randi() % AFFECTED.size()]] = true
+		var affected := GameConfig.wiring().affected_devices
+		if not affected.is_empty():
+			Ledger.wiring_cut[affected[randi() % affected.size()]] = true
 
 
 func _any_affected_cut() -> bool:
-	for t: StringName in AFFECTED:
+	for t: StringName in GameConfig.wiring().affected_devices:
 		if Ledger.wiring_cut.has(t):
 			return true
 	return false
@@ -151,7 +150,7 @@ func _make_random_wiring(count: int) -> Dictionary:
 	lefts.shuffle()
 	rights.shuffle()
 	var connect_count := count
-	if WiringTuning.allow_decoy and count > 3 and randf() < 0.5:
+	if GameConfig.wiring().should_leave_decoy(count):
 		connect_count = count - 1  # 留一个迷惑点
 	var result: Dictionary = {}
 	for i: int in connect_count:

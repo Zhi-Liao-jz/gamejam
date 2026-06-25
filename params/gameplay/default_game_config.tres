@@ -1,0 +1,137 @@
+[gd_resource type="Resource" script_class="GameplayConfig" load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/gameplay_config.gd" id="1_gameplay"]
+[ext_resource type="Script" path="res://scripts/resources/economy_config.gd" id="2_economy"]
+[ext_resource type="Script" path="res://scripts/resources/product_config.gd" id="3_product"]
+[ext_resource type="Script" path="res://scripts/resources/monkey_config.gd" id="4_monkey"]
+[ext_resource type="Script" path="res://scripts/resources/generator_config.gd" id="5_generator"]
+[ext_resource type="Script" path="res://scripts/resources/heater_config.gd" id="6_heater"]
+[ext_resource type="Script" path="res://scripts/resources/wiring_config.gd" id="7_wiring"]
+[ext_resource type="Script" path="res://scripts/resources/self_destruct_config.gd" id="8_self_destruct"]
+[ext_resource type="Script" path="res://scripts/resources/equipment_catalog.gd" id="9_catalog"]
+[ext_resource type="Script" path="res://scripts/resources/equipment_definition.gd" id="10_equipment"]
+
+[sub_resource type="Resource" id="EconomyConfig_default"]
+script = ExtResource("2_economy")
+day_duration = 300.0
+base_quota = 5
+quota_per_day = 2
+min_product_cost = 5
+max_product_cost = 15
+min_base_reward = 15
+max_base_reward = 40
+combo_tip_step = 2
+combo_tip_cap = 20
+
+[sub_resource type="Resource" id="ProductConfig_default"]
+script = ExtResource("3_product")
+max_waiting = 4
+slot_per_row = 4
+slot_start_x = -180.0
+slot_spacing = 90.0
+raw_unlock_day = 4
+raw_chance = 0.4
+normal_heat_time = 10.0
+overheat_heat_time = 5.0
+overheat_burn_time = 3.0
+
+[sub_resource type="Resource" id="MonkeyConfig_default"]
+script = ExtResource("4_monkey")
+first_monkey_day = 2
+max_monkeys = 3
+base_speed = 200.0
+speed_per_day = 0.06
+flee_speed_multiplier = 1.5
+base_tamper_delay = 2.0
+tamper_delay_reduce_per_day = 0.2
+min_tamper_delay = 0.8
+wander_pause_min = 0.6
+wander_pause_max = 1.8
+base_cooldown = 4.0
+cooldown_reduce_per_day = 0.5
+min_cooldown = 2.0
+repair_chance = 0.3
+recent_device_lock = 3.0
+flee_after_action = false
+spawn_rooms = Array[int]([0, 2, 8, 6])
+pitch_by_index = Array[float]([1.0, 0.92, 1.08])
+self_destruct_unlock_day = 3
+heater_unlock_day = 5
+power_unlock_day = 6
+
+[sub_resource type="Resource" id="GeneratorConfig_default"]
+script = ExtResource("5_generator")
+temp_divisor = 50.0
+temp_safe_min = 10.0
+temp_safe_max = 80.0
+tolerance = 5.0
+base_load = 30.0
+load_per_day = 6.0
+max_fuel_heat = 300.0
+fuel_add_rate = 160.0
+default_burn_rate = 0.6
+default_turbine_power = 0.5
+overload_fee = 1.0
+overheat_fee = 1.0
+shock_trap_unlock_day = 6
+
+[sub_resource type="Resource" id="HeaterConfig_default"]
+script = ExtResource("6_heater")
+laser_gap = 26.0
+mirror_factor = 1.5
+unlock_day = 4
+shock_trap_unlock_day = 5
+
+[sub_resource type="Resource" id="WiringConfig_default"]
+script = ExtResource("7_wiring")
+min_points = 3
+max_points = 5
+allow_decoy = true
+decoy_chance = 0.5
+affected_devices = Array[StringName]([&"product_exit", &"heater"])
+shock_trap_unlock_day = 6
+
+[sub_resource type="Resource" id="SelfDestructConfig_default"]
+script = ExtResource("8_self_destruct")
+countdown = 8.0
+open_cover_duration = 5.0
+press_button_duration = 1.0
+shock_trap_unlock_day = 3
+
+[sub_resource type="Resource" id="Equipment_shock_trap"]
+script = ExtResource("10_equipment")
+id = 1
+key = &"shock_trap"
+display_name = "电击陷阱"
+price = 120
+max_count = 3
+refill_interval = 30.0
+effect_duration = 0.0
+description = "安装到设备上，猴子操作时触发打断。"
+
+[sub_resource type="Resource" id="Equipment_net"]
+script = ExtResource("10_equipment")
+id = 2
+key = &"net"
+display_name = "捕网"
+price = 100
+max_count = 3
+refill_interval = 30.0
+effect_duration = 10.0
+description = "对当前房间猴子使用，使其 10 秒不能行动。"
+
+[sub_resource type="Resource" id="EquipmentCatalog_default"]
+script = ExtResource("9_catalog")
+items = Array[ExtResource("10_equipment")]([SubResource("Equipment_shock_trap"), SubResource("Equipment_net")])
+hud_equipment_ids = Array[int]([1, 2])
+
+[resource]
+script = ExtResource("1_gameplay")
+economy = SubResource("EconomyConfig_default")
+product = SubResource("ProductConfig_default")
+monkey = SubResource("MonkeyConfig_default")
+generator = SubResource("GeneratorConfig_default")
+heater = SubResource("HeaterConfig_default")
+wiring = SubResource("WiringConfig_default")
+self_destruct = SubResource("SelfDestructConfig_default")
+equipment = SubResource("EquipmentCatalog_default")

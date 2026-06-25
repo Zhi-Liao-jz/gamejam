@@ -4,7 +4,6 @@ extends Node2D
 
 const ACTOR_PLAYER: StringName = &"player"
 const ACTOR_MONKEY: StringName = &"monkey"
-const DEFAULT_MONKEY_ACTION_DURATION := 2.0
 
 var device_id: StringName = &""
 var device_type: StringName = &""
@@ -32,7 +31,7 @@ func available_actions(_actor: StringName) -> Array[StringName]:
 ## 某动作需要的交互耗时。玩家动作即时，猴子动作由状态机等待后完成。
 func action_duration(_action_id: StringName, actor: StringName) -> float:
 	if actor == ACTOR_MONKEY:
-		return DEFAULT_MONKEY_ACTION_DURATION
+		return GameConfig.monkey().base_tamper_delay
 	return 0.0
 
 

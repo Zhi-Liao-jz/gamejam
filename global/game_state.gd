@@ -4,30 +4,6 @@ extends Node
 const EQUIPMENT_SHOCK_TRAP: int = 1
 const EQUIPMENT_NET: int = 2
 const EQUIPMENT_NONE: int = 0
-const MAX_MONKEYS: int = 3  # 同时在场猴子数上限（2 设备下 2-3 只即"顾此失彼"，再多无目标可抢只糊声音）
-const EQUIPMENT_DATA: Dictionary[int, Dictionary] = {
-	EQUIPMENT_SHOCK_TRAP:
-	{
-		"id": EQUIPMENT_SHOCK_TRAP,
-		"key": &"shock_trap",
-		"name": "电击陷阱",
-		"price": 120,
-		"max_count": 3,
-		"refill_interval": 30.0,
-		"description": "安装到设备上，猴子操作时触发打断。",
-	},
-	EQUIPMENT_NET:
-	{
-		"id": EQUIPMENT_NET,
-		"key": &"net",
-		"name": "捕网",
-		"price": 100,
-		"max_count": 3,
-		"refill_interval": 30.0,
-		"effect_duration": 10.0,
-		"description": "对当前房间猴子使用，使其 10 秒不能行动。",
-	},
-}
 
 var day: int = 1
 var money: int = 0
@@ -111,16 +87,14 @@ func complete_day(completed_day: int, profit: int) -> void:
 	start_day(mini(completed_day + 1, highest_unlocked_day))
 
 
-## 当天该有几只猴子：第 1 天 0（保持无猴），第 2 天起随天数递增、封顶 MAX_MONKEYS。
+## 当天该有几只猴子：由 GameConfig.monkey 的首日、递增和上限配置决定。
 func monkey_count_today() -> int:
-	if day < 2:
-		return 0
-	return clampi(day - 1, 1, MAX_MONKEYS)
+	return GameConfig.monkey().count_for_day(day)
 
 
 ## 尝试购买长期装备。成功会扣钱、保存，并初始化运行时数量。
 func buy_equipment(equipment_id: int) -> bool:
-	if not EQUIPMENT_DATA.has(equipment_id):
+	if not GameConfig.equipment().has_equipment(equipment_id):
 		return false
 	if owned_equipment.has(equipment_id):
 		return false
@@ -258,7 +232,7 @@ func _sanitize_profit_map(source: Dictionary) -> Dictionary[int, int]:
 func _sanitize_equipment_list(equipments: Array[int]) -> Array[int]:
 	var result: Array[int] = []
 	for equipment_id: int in equipments:
-		if EQUIPMENT_DATA.has(equipment_id) and not result.has(equipment_id):
+		if GameConfig.equipment().has_equipment(equipment_id) and not result.has(equipment_id):
 			result.append(equipment_id)
 	result.sort()
 	return result
@@ -297,4 +271,4 @@ func _equipment_refill_interval(equipment_id: int) -> float:
 
 
 func _equipment_data(equipment_id: int) -> Dictionary:
-	return EQUIPMENT_DATA.get(equipment_id, {})
+	return GameConfig.equipment().equipment_data(equipment_id)

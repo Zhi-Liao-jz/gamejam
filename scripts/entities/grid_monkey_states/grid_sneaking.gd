@@ -7,7 +7,7 @@ var _pause_left: float = 0.0
 
 func enter(_msg: Dictionary = {}) -> void:
 	monkey = fsm.get_parent() as GridMonkey
-	_pause_left = randf_range(GridMonkey.WANDER_PAUSE_MIN, GridMonkey.WANDER_PAUSE_MAX)
+	_pause_left = _wander_pause()
 	monkey.clear_current_action()
 	monkey.set_visual_state(&"sneaking")
 
@@ -18,7 +18,7 @@ func physics_update(delta: float) -> void:
 		if monkey.advance_toward(monkey.target_room, monkey.speed, delta):
 			monkey.target_room = -1
 			monkey.stop_audio()
-			_pause_left = randf_range(GridMonkey.WANDER_PAUSE_MIN, GridMonkey.WANDER_PAUSE_MAX)
+			_pause_left = _wander_pause()
 		return
 	monkey.stop_audio()
 	_pause_left -= delta
@@ -29,7 +29,7 @@ func physics_update(delta: float) -> void:
 		return
 	monkey.target_room = monkey.pick_wander_room()
 	if monkey.target_room == -1:
-		_pause_left = randf_range(GridMonkey.WANDER_PAUSE_MIN, GridMonkey.WANDER_PAUSE_MAX)
+		_pause_left = _wander_pause()
 	elif monkey.target_room == monkey.current_room:
 		_pause_left = 0.0
 
@@ -37,3 +37,8 @@ func physics_update(delta: float) -> void:
 func exit() -> void:
 	if monkey != null:
 		monkey.stop_audio()
+
+
+func _wander_pause() -> float:
+	var monkey_config := GameConfig.monkey()
+	return randf_range(monkey_config.wander_pause_min, monkey_config.wander_pause_max)

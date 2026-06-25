@@ -159,7 +159,9 @@ func device_state() -> StringName:
 
 
 func can_install_shock_trap() -> bool:
-	return Game.day >= 6 and super.can_install_shock_trap()
+	return (
+		Game.day >= GameConfig.generator().shock_trap_unlock_day and super.can_install_shock_trap()
+	)
 
 
 func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
