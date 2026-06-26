@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" path="res://assets/atlas/misc_button.tres" id="3_btn"]
 [ext_resource type="Texture2D" path="res://assets/atlas/misc_cover_closed.tres" id="4_cc"]
 [ext_resource type="Texture2D" path="res://assets/atlas/misc_cover_open.tres" id="5_co"]
-[ext_resource type="Texture2D" path="res://assets/atlas/dev_exit_frame.tres" id="6_frame"]
+[ext_resource type="Texture2D" path="res://assets/atlas/misc_self_destruct_frame.tres" id="6_frame"]
 
 [node name="SelfDestruct" type="Node2D"]
 script = ExtResource("1_self_destruct")

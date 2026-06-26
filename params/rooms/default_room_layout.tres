@@ -84,5 +84,5 @@ grid_cols = 3
 grid_rows = 3
 cell_gap = Vector2(160, 160)
 start_room = 4
-panel_local = Vector2(150, -95)
+panel_local = Vector2(0, 0)
 rooms = Array[ExtResource("2_room")]([SubResource("RoomDefinition_0"), SubResource("RoomDefinition_1"), SubResource("RoomDefinition_2"), SubResource("RoomDefinition_3"), SubResource("RoomDefinition_4"), SubResource("RoomDefinition_5"), SubResource("RoomDefinition_6"), SubResource("RoomDefinition_7"), SubResource("RoomDefinition_8")])

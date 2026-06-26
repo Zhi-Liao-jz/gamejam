@@ -13,7 +13,6 @@
 script = ExtResource("1_heater")
 
 [node name="Visual" type="Node2D" parent="."]
-position = Vector2(-150, -95)
 script = ExtResource("2_visual")
 default_texture = ExtResource("3_on")
 state_textures = {
@@ -23,18 +22,17 @@ state_textures = {
 [node name="Sprite2D" type="Sprite2D" parent="Visual"]
 
 [node name="Plate0" type="Sprite2D" parent="."]
-position = Vector2(-133, 65)
+position = Vector2(-32, -9)
 texture = ExtResource("5_idle")
 
 [node name="Plate1" type="Sprite2D" parent="."]
-position = Vector2(0, 65)
+position = Vector2(0, -9)
 texture = ExtResource("5_idle")
 
 [node name="Plate2" type="Sprite2D" parent="."]
-position = Vector2(133, 65)
+position = Vector2(32, -9)
 texture = ExtResource("5_idle")
 
 [node name="SelectFrame" type="Sprite2D" parent="."]
 visible = false
-position = Vector2(-150, -95)
 texture = ExtResource("8_frame")

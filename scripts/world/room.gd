@@ -6,8 +6,9 @@ extends Node2D
 
 const CELL_SIZE := Vector2(480.0, 300.0)  # 单个房间的世界尺寸（监控视角下铺满画面）
 const TILE_SIZE := 16
-const FLOOR_COORD := Vector2i(1, 7)  # 杂项.png 中地板瓦片的 atlas 坐标
-const WALL_COORD := Vector2i(2, 9)  # 杂项.png 中墙壁瓦片的 atlas 坐标
+const FLOOR_COORD := Vector2i(0, 0)  # wall_tiles.png：地板
+const WALL_H_COORD := Vector2i(1, 0)  # 横墙（上边；转置后做左右竖墙）
+const BRICK_COORD := Vector2i(2, 0)  # 砖纹（下边）
 const TILE_SOURCE := 0
 
 var room_id: int = 0
@@ -35,10 +36,18 @@ func _build_floor() -> void:
 	var cols := int(ceil(CELL_SIZE.x / TILE_SIZE))
 	var rows := int(ceil(CELL_SIZE.y / TILE_SIZE))
 	_tiles.position = -Vector2(cols * TILE_SIZE, rows * TILE_SIZE) * 0.5
+	var transpose := TileSetAtlasSource.TRANSFORM_TRANSPOSE  # 横墙转置→竖墙（左右）
 	for y: int in rows:
 		for x: int in cols:
-			var border := x == 0 or y == 0 or x == cols - 1 or y == rows - 1
-			_tiles.set_cell(Vector2i(x, y), TILE_SOURCE, WALL_COORD if border else FLOOR_COORD)
+			var pos := Vector2i(x, y)
+			if y == 0:  # 上边
+				_tiles.set_cell(pos, TILE_SOURCE, WALL_H_COORD)
+			elif y == rows - 1:  # 下边
+				_tiles.set_cell(pos, TILE_SOURCE, BRICK_COORD)
+			elif x == 0 or x == cols - 1:  # 左右边：横墙转置成竖墙
+				_tiles.set_cell(pos, TILE_SOURCE, WALL_H_COORD, transpose)
+			else:  # 内部地板
+				_tiles.set_cell(pos, TILE_SOURCE, FLOOR_COORD)
 
 
 ## 由 RoomManager 在实例化后写入本房间的静态配置。
