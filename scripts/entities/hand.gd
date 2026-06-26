@@ -133,7 +133,10 @@ func _try_spawn_from_exit(world_pos: Vector2) -> bool:
 
 
 ## 点击加热台控制区 → 弹出加热台激光面板（开关 / 反射镜滑块在面板内调）；命中返回 true。
+## 手持产品时不开面板：此时点加热台是把产品放到加热盘上（平台同时是点击区与摆放区）。
 func _try_open_heater_panel(world_pos: Vector2) -> bool:
+	if _held != null:
+		return false
 	var room := room_manager.current_room_node()
 	if room == null or room.role != &"heater":
 		return false
