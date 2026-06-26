@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/product_exit.gd" id="1_product_exit"]
 [ext_resource type="PackedScene" path="res://scenes/product.tscn" id="2_product"]
 [ext_resource type="Script" path="res://scripts/visuals/texture_visual.gd" id="3_visual"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_exit_chute.tres" id="4_exit"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_exit_frame.tres" id="5_frame"]
 
 [node name="ProductExit" type="Node2D"]
 script = ExtResource("1_product_exit")
@@ -10,7 +12,11 @@ product_scene = ExtResource("2_product")
 owner_room_id = 3
 
 [node name="Visual" type="Node2D" parent="."]
-position = Vector2(150, -22)
 script = ExtResource("3_visual")
+default_texture = ExtResource("4_exit")
 
 [node name="Sprite2D" type="Sprite2D" parent="Visual"]
+
+[node name="SelectFrame" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("5_frame")

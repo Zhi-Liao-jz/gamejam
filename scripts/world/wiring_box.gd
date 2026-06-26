@@ -6,7 +6,7 @@ extends BaseDevice
 ## 注意：接线盒与发电机供电互相独立（is_device_powered = 发电机正常 AND 未被接线盒切断）。
 
 const ACTION_M_RANDOMIZE: StringName = &"wiring_randomize"
-const SIZE := Vector2(150.0, 150.0)  # 命中盒 / 视觉外框（房间局部坐标，占房间右半）
+const SIZE := Vector2(42.0, 54.0)  # 命中盒 / 视觉外框（房间局部坐标，占房间右半）
 const OFFSET := Vector2(85.0, 8.0)
 const OK_COLOR := Color(0.30, 0.85, 0.75)
 const FAULT_COLOR := Color(0.95, 0.72, 0.16)

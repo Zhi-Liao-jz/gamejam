@@ -78,11 +78,11 @@ script = ExtResource("6_hud")
 
 [node name="InfoLabel" type="Label" parent="UI/GridHud"]
 offset_left = 20.0
-offset_top = 16.0
-offset_right = 640.0
-offset_bottom = 96.0
+offset_top = 14.0
+offset_right = 760.0
+offset_bottom = 70.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 15
 
 [node name="SummaryPanel" type="Panel" parent="UI/GridHud"]
 offset_left = 310.0

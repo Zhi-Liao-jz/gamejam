@@ -10,6 +10,7 @@ const DEFAULT_SELF_DESTRUCT_SCENE := preload("res://scenes/devices/self_destruct
 const DEFAULT_HEATER_SCENE := preload("res://scenes/devices/heater.tscn")
 const DEFAULT_GENERATOR_SCENE := preload("res://scenes/devices/generator.tscn")
 const DEFAULT_WIRING_BOX_SCENE := preload("res://scenes/devices/wiring_box.tscn")
+const PRODUCT_EXIT_PANEL_LOCAL := Vector2(78.0, -86.0)
 
 @export var room_scene: PackedScene
 @export var room_layout: RoomLayoutResource
@@ -219,7 +220,10 @@ func _build_panels() -> void:
 			if panel == null:
 				continue
 			panel.setup(room.room_id, room.role, room.color_key)
-			room.attach_panel(panel, _layout().panel_local)
+			var panel_local := (
+				PRODUCT_EXIT_PANEL_LOCAL if room.role == &"product_exit" else _layout().panel_local
+			)
+			room.attach_panel(panel, panel_local)
 
 
 ## 给中央房间挂自爆开关。

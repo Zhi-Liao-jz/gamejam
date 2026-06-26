@@ -125,10 +125,9 @@ func _try_spawn_from_exit(world_pos: Vector2) -> bool:
 	var room := room_manager.current_room_node()
 	if room == null or room.role != &"product_exit":
 		return false
-	if not room.has_panel() or not room.control_panel.global_rect().has_point(world_pos):
+	if product_exit == null or not product_exit.global_rect().has_point(world_pos):
 		return false
-	if product_exit != null:
-		product_exit.start_action(ProductExit.ACTION_SPAWN, BaseDevice.ACTOR_PLAYER, self)
+	product_exit.start_action(ProductExit.ACTION_SPAWN, BaseDevice.ACTOR_PLAYER, self)
 	return true
 
 
