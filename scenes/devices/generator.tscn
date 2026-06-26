@@ -23,5 +23,5 @@ state_textures = {
 
 [node name="SelectFrame" type="Sprite2D" parent="."]
 visible = false
-position = Vector2(-85, 8)
+position = Vector2(-85, 13)
 texture = ExtResource("5_frame")

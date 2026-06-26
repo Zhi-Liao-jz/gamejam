@@ -9,9 +9,13 @@ enum State { PROTECTED, EXPOSED, ARMED, TRIGGERED }  # 受保护 / 罩被打开 
 const ACTION_OPEN_COVER: StringName = &"open_cover"
 const ACTION_PRESS_BUTTON: StringName = &"press_button"
 const ACTION_RESET: StringName = &"reset"
-const SIZE := Vector2(140.0, 140.0)  # 命中盒 / 视觉尺寸（房间局部坐标）
+const SIZE := Vector2(48.0, 48.0)  # 命中盒 / 视觉尺寸（房间局部坐标）
+const SHOCK_MARKER_OFFSET := Vector2(18.0, -18.0)
 const COVER_CLOSED := preload("res://assets/atlas/misc_cover_closed.tres")
 const COVER_OPEN := preload("res://assets/atlas/misc_cover_open.tres")
+const FRAME_BUTTON := preload("res://assets/atlas/misc_self_destruct_button_frame.tres")
+const FRAME_COVER_CLOSED := preload("res://assets/atlas/misc_self_destruct_frame.tres")
+const FRAME_COVER_OPEN := preload("res://assets/atlas/misc_self_destruct_cover_open_frame.tres")
 
 var state: State = State.PROTECTED
 
@@ -19,6 +23,7 @@ var _remaining: float = 0.0
 
 @onready var visual: TextureVisual = $Visual
 @onready var _cover: Sprite2D = $Cover
+@onready var _state_select_frame: Sprite2D = $SelectFrame
 
 
 func _ready() -> void:
@@ -183,7 +188,7 @@ func _on_work_started() -> void:
 
 func _draw() -> void:
 	if _has_visual_texture():
-		draw_shock_trap_marker(Vector2(SIZE.x * 0.32, -SIZE.y * 0.32))
+		draw_shock_trap_marker(SHOCK_MARKER_OFFSET)
 		return
 	var rect := Rect2(-SIZE * 0.5, SIZE)
 	draw_rect(rect, Color(0.30, 0.05, 0.05))  # 底座
@@ -194,7 +199,7 @@ func _draw() -> void:
 		draw_rect(rect, Color(0.70, 0.85, 1.0, 0.85), false, 5.0)  # 玻璃罩盖着：浅蓝边框
 	else:
 		draw_rect(rect, Color(0.95, 0.30, 0.20), false, 5.0)  # 罩开 / 危险：红框
-	draw_shock_trap_marker(Vector2(SIZE.x * 0.32, -SIZE.y * 0.32))
+	draw_shock_trap_marker(SHOCK_MARKER_OFFSET)
 
 
 func _update_visual() -> void:
@@ -215,6 +220,22 @@ func _update_visual() -> void:
 				_cover.visible = true
 			_:
 				_cover.visible = false
+	_update_select_frame()
+
+
+func _update_select_frame() -> void:
+	if _state_select_frame == null:
+		return
+	match state:
+		State.PROTECTED:
+			_state_select_frame.texture = FRAME_COVER_CLOSED
+			_state_select_frame.position = Vector2(0.0, 0.0)
+		State.EXPOSED:
+			_state_select_frame.texture = FRAME_COVER_OPEN
+			_state_select_frame.position = Vector2(1.0, -2.0)
+		_:
+			_state_select_frame.texture = FRAME_BUTTON
+			_state_select_frame.position = Vector2(0.0, 0.0)
 
 
 func _has_visual_texture() -> bool:

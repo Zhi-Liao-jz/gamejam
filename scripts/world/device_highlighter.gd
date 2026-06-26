@@ -42,6 +42,27 @@ func _target_under_cursor() -> Node:
 		if not dev.has_method("global_rect"):
 			continue
 		var rect: Rect2 = dev.call("global_rect")
-		if rect.has_point(pos):
+		if rect.has_point(pos) and _player_can_use(dev):
 			return dev
 	return null
+
+
+func _player_can_use(device: BaseDevice) -> bool:
+	if not device.can_player_interact:
+		return false
+	if not device.available_actions(BaseDevice.ACTOR_PLAYER).is_empty():
+		return true
+	match device.device_type:
+		&"control_panel":
+			var panel := device as ControlPanel
+			return panel != null and panel.controls == &"delivery"
+		&"heater", &"power":
+			return true
+		&"self_destruct":
+			var self_destruct := device as SelfDestruct
+			return (
+				self_destruct != null
+				and (self_destruct.is_attackable() or self_destruct.is_resettable())
+			)
+		_:
+			return false

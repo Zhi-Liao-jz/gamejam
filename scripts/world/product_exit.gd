@@ -4,23 +4,29 @@ extends BaseDevice
 ## 颜色取自当前交货点房间，保证每个产品都有对应交货点。
 
 const ACTION_SPAWN: StringName = &"spawn_product"
-const TRAP_TARGET_SIZE := Vector2(96.0, 54.0)
-const TRAP_TARGET_OFFSET := Vector2(150.0, -22.0)
+const EXIT_HIT_SIZE := Vector2(64.0, 51.0)
+const EXIT_LOCAL := Vector2(0.0, -86.0)
 
 @export var product_scene: PackedScene
 @export var owner_room_id: int = 3
 
 @onready var room_manager := get_node("../RoomManager") as RoomManager
 @onready var visual: TextureVisual = $Visual
+@onready var _exit_select_frame: Sprite2D = $SelectFrame
 
 
 func _ready() -> void:
 	setup_device(&"product_exit", &"product_exit", owner_room_id)
+	_sync_visual_position()
+	call_deferred("_sync_visual_position")
 	_update_visual()
 	queue_redraw()
 
 
-func available_actions(_actor: StringName) -> Array[StringName]:
+func available_actions(actor: StringName) -> Array[StringName]:
+	var exit_room := _exit_room()
+	if actor == ACTOR_PLAYER and exit_room != null and not exit_room.panel_open():
+		return [ACTION_SPAWN]
 	if not _can_spawn_product():
 		return []
 	return [ACTION_SPAWN]
@@ -41,9 +47,7 @@ func global_rect() -> Rect2:
 	var room := room_manager.find_room_by_role(&"product_exit")
 	if room == null:
 		return Rect2()
-	return Rect2(
-		room.global_position + TRAP_TARGET_OFFSET - TRAP_TARGET_SIZE * 0.5, TRAP_TARGET_SIZE
-	)
+	return Rect2(room.global_position + EXIT_LOCAL - EXIT_HIT_SIZE * 0.5, EXIT_HIT_SIZE)
 
 
 ## 尝试生成一个产品。成功返回 true，失败由调用方决定是否给提示。
@@ -51,9 +55,19 @@ func try_spawn_product() -> bool:
 	return start_action(ACTION_SPAWN, ACTOR_PLAYER, null)
 
 
-func _perform_action(action_id: StringName, _actor: StringName, _actor_node: Node) -> bool:
+func _perform_action(action_id: StringName, actor: StringName, _actor_node: Node) -> bool:
 	if action_id != ACTION_SPAWN:
 		return false
+	var exit_room := _exit_room()
+	if (
+		actor == ACTOR_PLAYER
+		and exit_room != null
+		and exit_room.has_panel()
+		and not exit_room.panel_open()
+	):
+		return exit_room.control_panel.start_action(
+			ControlPanel.ACTION_OPEN, BaseDevice.ACTOR_PLAYER, self
+		)
 	return _spawn_product()
 
 
@@ -118,35 +132,40 @@ func _available_exit_room() -> Room:
 		return null
 	if not Ledger.is_device_powered(&"product_exit"):
 		return null
-	var exit_room := room_manager.find_room_by_role(&"product_exit")
+	var exit_room := _exit_room()
 	if exit_room == null or not exit_room.panel_open():
 		return null
 	return exit_room
 
 
+func _exit_room() -> Room:
+	return room_manager.find_room_by_role(&"product_exit")
+
+
 func _draw() -> void:
-	if _has_visual_texture():
-		return
 	var room := room_manager.find_room_by_role(&"product_exit")
 	if room == null:
 		return
-	var target_pos := to_local(room.global_position + TRAP_TARGET_OFFSET)
-	draw_rect(
-		Rect2(target_pos - TRAP_TARGET_SIZE * 0.5, TRAP_TARGET_SIZE), Color(0.88, 0.70, 0.24, 0.24)
-	)
-	draw_rect(
-		Rect2(target_pos - TRAP_TARGET_SIZE * 0.5, TRAP_TARGET_SIZE),
-		Color(0.95, 0.82, 0.30),
-		false,
-		2.0
-	)
-	var marker_pos := target_pos + Vector2(TRAP_TARGET_SIZE.x * 0.34, -TRAP_TARGET_SIZE.y * 0.28)
+	var target_pos := to_local(room.global_position + EXIT_LOCAL)
+	var marker_pos := target_pos + Vector2(EXIT_HIT_SIZE.x * 0.34, -EXIT_HIT_SIZE.y * 0.28)
 	draw_shock_trap_marker(marker_pos)
 
 
 func _update_visual() -> void:
 	if visual != null:
 		visual.apply_state(device_state())
+	_sync_visual_position()
+
+
+func _sync_visual_position() -> void:
+	var room := room_manager.find_room_by_role(&"product_exit")
+	if room == null:
+		return
+	var target := room.global_position + EXIT_LOCAL
+	if visual != null:
+		visual.global_position = target
+	if _exit_select_frame != null:
+		_exit_select_frame.global_position = target
 
 
 func _has_visual_texture() -> bool:

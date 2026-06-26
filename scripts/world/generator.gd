@@ -7,7 +7,7 @@ extends BaseDevice
 
 const ACTION_M_RANDOMIZE: StringName = &"gen_randomize"
 
-const SIZE := Vector2(150.0, 150.0)  # 发电机命中盒 / 视觉外框（房间局部坐标，占房间左半）
+const SIZE := Vector2(66.0, 54.0)  # 发电机命中盒 / 视觉外框（房间局部坐标，占房间左半）
 const OFFSET := Vector2(-85.0, 8.0)
 const POWERED_COLOR := Color(0.30, 0.85, 0.75)
 const OFFLINE_COLOR := Color(0.95, 0.38, 0.12)

@@ -165,11 +165,7 @@ func _refresh_info() -> void:
 	if _trap_toast_left > 0.0:
 		warn += "\n⚡ 电击陷阱触发！%s 的猴子被打断逃跑" % _trap_flash_room_name()
 	info_label.text = (
-		(
-			"第 %d 天    剩余 %s    存款 $%d\n今日利润 $%d    交货 %d / %d    连击 %d    小费 $%d\n监控中：%s    手持：%s\n"
-			+ "装备：%s\n"
-			+ "[WASD] 切监控    [左键] 拿放 / 出口出货 / 重开面板 / 赶猴%s"
-		)
+		("第 %d 天  %s  $%d  利润 $%d  交货 %d/%d  连击 %d  小费 $%d\n" + "%s    手持：%s    装备：%s%s")
 		% [
 			Game.day,
 			_format_time(Ledger.time_left),

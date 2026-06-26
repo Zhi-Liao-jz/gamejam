@@ -9,7 +9,7 @@ const ACTION_M_RANDOMIZE: StringName = &"heater_randomize"
 const EMITTER_COUNT := 6
 const PLATE_COUNT := 3
 const EMPTY_FACTOR := 2.0  # 发射器上方留 LaserGap * 2 空白
-const SURFACE := Rect2(-48.0, -26.0, 96.0, 34.0)  # 产品摆放区 = 加热台顶面（房间局部坐标）
+const SURFACE := Rect2(-48.0, -24.0, 96.0, 34.0)  # 产品摆放区 = 加热台顶面（房间局部坐标）
 const CONTROL_SIZE := Vector2(110.0, 58.0)  # 整个平台都是点击区（开激光面板）
 const CONTROL_OFFSET := Vector2(0.0, 0.0)
 const OFF_TINT := Color(0.35, 0.35, 0.32)
