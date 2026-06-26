@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/wiring_box.gd" id="1_wiring_box"]
 [ext_resource type="Script" path="res://scripts/visuals/texture_visual.gd" id="2_visual"]
+[ext_resource type="Texture2D" path="res://assets/atlas/misc_wiring_box.tres" id="3_box"]
+[ext_resource type="Texture2D" path="res://assets/atlas/misc_wiring_frame.tres" id="4_frame"]
 
 [node name="WiringBox" type="Node2D"]
 script = ExtResource("1_wiring_box")
@@ -9,5 +11,11 @@ script = ExtResource("1_wiring_box")
 [node name="Visual" type="Node2D" parent="."]
 position = Vector2(85, 8)
 script = ExtResource("2_visual")
+default_texture = ExtResource("3_box")
 
 [node name="Sprite2D" type="Sprite2D" parent="Visual"]
+
+[node name="SelectFrame" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(85, 8)
+texture = ExtResource("4_frame")

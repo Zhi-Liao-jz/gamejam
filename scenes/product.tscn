@@ -1,12 +1,19 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/product.gd" id="1_product"]
 [ext_resource type="Script" path="res://scripts/visuals/texture_visual.gd" id="2_visual"]
+[ext_resource type="Texture2D" path="res://assets/atlas/misc_product.tres" id="3_prod"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_delivery_frame.tres" id="4_frame"]
 
 [node name="Product" type="Node2D"]
 script = ExtResource("1_product")
 
 [node name="Visual" type="Node2D" parent="."]
 script = ExtResource("2_visual")
+default_texture = ExtResource("3_prod")
 
 [node name="Sprite2D" type="Sprite2D" parent="Visual"]
+
+[node name="SelectFrame" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("4_frame")

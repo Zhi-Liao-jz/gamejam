@@ -16,6 +16,9 @@ const OFF_TINT := Color(0.35, 0.35, 0.32)
 const NORMAL_TINT := Color(0.95, 0.55, 0.12)
 const OVERHEAT_TINT := Color(1.0, 0.25, 0.10)
 const OFFLINE_TINT := Color(0.24, 0.24, 0.24)
+const PLATE_IDLE := preload("res://assets/atlas/dev_plate_idle.tres")
+const PLATE_NORMAL := preload("res://assets/atlas/dev_plate_normal.tres")
+const PLATE_OVERHEAT := preload("res://assets/atlas/dev_plate_overheat.tres")
 
 var switch_on: bool = false
 var mirror_heights: Array[float] = [0.5, 0.5, 0.5]  # 每个反射镜高度 0~1（1=最上=不反射）
@@ -23,6 +26,7 @@ var mirror_heights: Array[float] = [0.5, 0.5, 0.5]  # 每个反射镜高度 0~1�
 var _room: Room = null
 
 @onready var visual: TextureVisual = $Visual
+@onready var _plates: Array[Sprite2D] = [$Plate0, $Plate1, $Plate2]
 
 
 func _ready() -> void:
@@ -243,6 +247,9 @@ func _handle_heat_result(result: StringName) -> void:
 
 func _draw() -> void:
 	if _has_visual_texture():
+		draw_shock_trap_marker(
+			CONTROL_OFFSET + Vector2(CONTROL_SIZE.x * 0.34, -CONTROL_SIZE.y * 0.28)
+		)
 		return
 	var counts := plate_counts()
 	var offline := is_offline()
@@ -270,7 +277,28 @@ func _plate_color(count: int, offline: bool) -> Color:
 
 func _update_visual() -> void:
 	if visual != null:
-		visual.apply_state(device_state())
+		visual.apply_state(device_state())  # 底座：offline=没电图，其余=有电图
+	_update_plates()
+
+
+## 3 个加热盘按各自收到的激光数切贴图：0/停电=idle，1=normal，2=overheat。
+func _update_plates() -> void:
+	if _plates.is_empty():
+		return
+	var counts := plate_counts()
+	var offline := is_offline()
+	for j: int in PLATE_COUNT:
+		if j >= _plates.size() or _plates[j] == null:
+			continue
+		_plates[j].texture = _plate_texture(counts[j], offline)
+
+
+func _plate_texture(count: int, offline: bool) -> Texture2D:
+	if offline or count <= 0:
+		return PLATE_IDLE
+	if count >= 2:
+		return PLATE_OVERHEAT
+	return PLATE_NORMAL
 
 
 func _has_visual_texture() -> bool:

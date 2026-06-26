@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/entities/grid_monkey.gd" id="1_monkey"]
 [ext_resource type="Script" path="res://scripts/base_state_machine.gd" id="2_fsm"]
@@ -6,15 +6,84 @@
 [ext_resource type="Script" path="res://scripts/entities/grid_monkey_states/grid_tampering.gd" id="4_tamper"]
 [ext_resource type="Script" path="res://scripts/entities/grid_monkey_states/grid_fleeing.gd" id="5_flee"]
 [ext_resource type="Script" path="res://scripts/entities/grid_monkey_states/grid_captured.gd" id="6_captured"]
-[ext_resource type="Script" path="res://scripts/visuals/texture_visual.gd" id="7_visual"]
+[ext_resource type="Texture2D" path="res://assets/animation/猴.png" id="7_sheet"]
+
+[sub_resource type="AtlasTexture" id="idle0"]
+atlas = ExtResource("7_sheet")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="idle1"]
+atlas = ExtResource("7_sheet")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="idle2"]
+atlas = ExtResource("7_sheet")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="idle3"]
+atlas = ExtResource("7_sheet")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="walk0"]
+atlas = ExtResource("7_sheet")
+region = Rect2(0, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="walk1"]
+atlas = ExtResource("7_sheet")
+region = Rect2(16, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="walk2"]
+atlas = ExtResource("7_sheet")
+region = Rect2(32, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="walk3"]
+atlas = ExtResource("7_sheet")
+region = Rect2(48, 16, 16, 16)
+
+[sub_resource type="SpriteFrames" id="frames"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("idle0")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle1")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle2")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle3")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("walk0")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk1")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk2")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk3")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+}]
 
 [node name="GridMonkey" type="Node2D"]
 script = ExtResource("1_monkey")
 
-[node name="Visual" type="Node2D" parent="."]
-script = ExtResource("7_visual")
-
-[node name="Sprite2D" type="Sprite2D" parent="Visual"]
+[node name="Anim" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("frames")
+animation = &"idle"
+autoplay = "idle"
 
 [node name="Audio" type="AudioStreamPlayer2D" parent="."]
 max_distance = 900.0

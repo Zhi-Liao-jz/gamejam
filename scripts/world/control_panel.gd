@@ -7,20 +7,26 @@ extends BaseDevice
 const ACTION_OPEN: StringName = &"open"
 const ACTION_CLOSE: StringName = &"close"
 const SIZE := Vector2(96.0, 54.0)  # 面板命中盒 / 视觉尺寸（房间局部坐标）
+const EXIT_FRAME := preload("res://assets/atlas/dev_exit_frame.tres")
 
 var controls: StringName = &""  # 本面板管哪个系统：delivery / product_exit（仅记录用）
+var color_key: StringName = &""  # 交货点颜色键（red/blue/green）；决定用哪张彩色面板贴图
 
 @onready var visual: TextureVisual = $Visual
 
 
 func _ready() -> void:
 	EventBus.subscribe("work_started", _on_work_started)
+	# 出口面板换成出口形状的选中框（交货点用默认的彩色面板框）。
+	if controls == &"product_exit" and has_node("SelectFrame"):
+		($SelectFrame as Sprite2D).texture = EXIT_FRAME
 	_update_visual()
 
 
-## 由 RoomManager 在挂载前写入：归属房间 + 管控的系统类别。
-func setup(owner_room_id: int, controlled: StringName) -> void:
+## 由 RoomManager 在挂载前写入：归属房间 + 管控的系统类别 + 交货点颜色键。
+func setup(owner_room_id: int, controlled: StringName, key: StringName = &"") -> void:
 	controls = controlled
+	color_key = key
 	setup_device(StringName("panel_%d" % owner_room_id), &"control_panel", owner_room_id)
 
 
@@ -47,6 +53,14 @@ func monkey_action_is_repair(action_id: StringName) -> bool:
 
 func device_state() -> StringName:
 	return &"open" if is_open else &"closed"
+
+
+## 贴图状态键：交货点用 颜色_开关（如 red_open），产品出口用 exit。
+func _visual_state() -> StringName:
+	if controls == &"product_exit":
+		return &"exit"
+	var c: StringName = color_key if color_key != &"" else &"red"
+	return StringName("%s_%s" % [c, "open" if is_open else "closed"])
 
 
 ## 打开面板（已开则不重复广播）。
@@ -87,6 +101,7 @@ func _on_work_started() -> void:
 
 func _draw() -> void:
 	if _has_visual_texture():
+		draw_shock_trap_marker(Vector2(SIZE.x * 0.34, -SIZE.y * 0.28))
 		return
 	var rect := Rect2(-SIZE * 0.5, SIZE)
 	var fill := Color(0.20, 0.62, 0.32) if is_open else Color(0.72, 0.18, 0.16)
@@ -96,8 +111,13 @@ func _draw() -> void:
 
 
 func _update_visual() -> void:
-	if visual != null:
-		visual.apply_state(device_state())
+	if visual == null:
+		return
+	visual.apply_state(_visual_state())
+	if visual.sprite != null:
+		# 出口面板没有独立"关闭"贴图：关闭时压暗示意可重开
+		var dim := controls == &"product_exit" and not is_open
+		visual.sprite.self_modulate = Color(0.45, 0.45, 0.45) if dim else Color.WHITE
 
 
 func _has_visual_texture() -> bool:

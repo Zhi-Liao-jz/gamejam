@@ -13,6 +13,21 @@ var can_player_interact: bool = true
 var can_monkey_interact: bool = true
 var has_shock_trap: bool = false
 
+var _select_frame: CanvasItem = null
+var _select_frame_checked: bool = false
+
+
+## 玩家光标悬停时显示 / 隐藏该设备的选中框（场景里名为 SelectFrame 的子节点，无则忽略）。
+func set_highlighted(on: bool) -> void:
+	if not _select_frame_checked:
+		_select_frame_checked = true
+		if has_node("SelectFrame"):
+			_select_frame = get_node("SelectFrame") as CanvasItem
+			if _select_frame != null:
+				_select_frame.visible = false
+	if _select_frame != null and is_instance_valid(_select_frame):
+		_select_frame.visible = on
+
 
 ## 基础设备配置。派生设备在 setup 中调用。
 func setup_device(id: StringName, type: StringName, owner_room_id: int) -> void:

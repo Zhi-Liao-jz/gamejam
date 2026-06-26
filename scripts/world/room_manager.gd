@@ -218,7 +218,7 @@ func _build_panels() -> void:
 			var panel := control_panel_scene.instantiate() as ControlPanel
 			if panel == null:
 				continue
-			panel.setup(room.room_id, room.role)
+			panel.setup(room.room_id, room.role, room.color_key)
 			room.attach_panel(panel, _layout().panel_local)
 
 

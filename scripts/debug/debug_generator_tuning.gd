@@ -7,7 +7,7 @@ const STEP_LOAD_PER_DAY := 1.0  # 负载/天每次 ±1
 const STEP_TOL := 1.0  # 容差每次 ±1
 const STEP_TEMP := 5.0  # 温度上限每次 ±5
 const STEP_FEE := 0.5  # 维护费每次 ±0.5
-const PANEL_POS := Vector2(900.0, 260.0)
+const PANEL_POS := Vector2(655.0, 210.0)
 
 var _panel: PanelContainer = null
 var _load_label: Label = null
@@ -41,6 +41,7 @@ func _build_ui() -> void:
 
 	_panel = PanelContainer.new()
 	_panel.position = PANEL_POS
+	_panel.theme = _compact_theme()
 	layer.add_child(_panel)
 
 	var box := VBoxContainer.new()
@@ -72,6 +73,13 @@ func _build_ui() -> void:
 	)
 	_fee_label = Label.new()
 	box.add_child(_make_row("维护费/秒", _fee_label, _add_fee.bind(-STEP_FEE), _add_fee.bind(STEP_FEE)))
+
+
+## 紧凑小字号主题：覆盖项目自定义大字体，避免调试面板撑高重叠。
+func _compact_theme() -> Theme:
+	var t := Theme.new()
+	t.default_font_size = 14
+	return t
 
 
 ## 一行："名称 [-] 值 [+]"。on_minus / on_plus 为点击回调。

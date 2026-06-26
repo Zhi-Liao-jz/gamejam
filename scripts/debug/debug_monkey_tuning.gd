@@ -4,7 +4,7 @@ extends Node
 
 const STEP_CHANCE := 0.1  # 修复概率每次 ±10%
 const STEP_LOCK := 1.0  # 作业冷却每次 ±1s
-const PANEL_POS := Vector2(900.0, 20.0)
+const PANEL_POS := Vector2(655.0, 12.0)
 
 var _panel: PanelContainer = null
 var _chance_label: Label = null
@@ -35,6 +35,7 @@ func _build_ui() -> void:
 
 	_panel = PanelContainer.new()
 	_panel.position = PANEL_POS
+	_panel.theme = _compact_theme()
 	layer.add_child(_panel)
 
 	var box := VBoxContainer.new()
@@ -62,6 +63,13 @@ func _build_ui() -> void:
 	flee_button.button_pressed = MonkeyTuning.flee_after_action
 	flee_button.toggled.connect(_on_flee_toggled)
 	box.add_child(flee_button)
+
+
+## 紧凑小字号主题：覆盖项目自定义大字体，避免调试面板撑高重叠。
+func _compact_theme() -> Theme:
+	var t := Theme.new()
+	t.default_font_size = 14
+	return t
 
 
 ## 一行："名称 [-] 值 [+]"。on_minus / on_plus 为点击回调。

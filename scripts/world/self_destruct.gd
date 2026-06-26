@@ -10,12 +10,15 @@ const ACTION_OPEN_COVER: StringName = &"open_cover"
 const ACTION_PRESS_BUTTON: StringName = &"press_button"
 const ACTION_RESET: StringName = &"reset"
 const SIZE := Vector2(140.0, 140.0)  # 命中盒 / 视觉尺寸（房间局部坐标）
+const COVER_CLOSED := preload("res://assets/atlas/misc_cover_closed.tres")
+const COVER_OPEN := preload("res://assets/atlas/misc_cover_open.tres")
 
 var state: State = State.PROTECTED
 
 var _remaining: float = 0.0
 
 @onready var visual: TextureVisual = $Visual
+@onready var _cover: Sprite2D = $Cover
 
 
 func _ready() -> void:
@@ -180,6 +183,7 @@ func _on_work_started() -> void:
 
 func _draw() -> void:
 	if _has_visual_texture():
+		draw_shock_trap_marker(Vector2(SIZE.x * 0.32, -SIZE.y * 0.32))
 		return
 	var rect := Rect2(-SIZE * 0.5, SIZE)
 	draw_rect(rect, Color(0.30, 0.05, 0.05))  # 底座
@@ -195,7 +199,22 @@ func _draw() -> void:
 
 func _update_visual() -> void:
 	if visual != null:
-		visual.apply_state(device_state())
+		visual.apply_state(device_state())  # 底座=按钮贴图（default_texture）
+		# 倒计时（ARMED）按钮压成警示黄，其余正常。
+		if visual.sprite != null:
+			var armed := state == State.ARMED
+			visual.sprite.self_modulate = Color(1.0, 0.85, 0.1) if armed else Color.WHITE
+	# 玻璃罩 overlay：受保护=关，罩被开=开，已按下/引爆=罩消失露出按钮。
+	if _cover != null:
+		match state:
+			State.PROTECTED:
+				_cover.texture = COVER_CLOSED
+				_cover.visible = true
+			State.EXPOSED:
+				_cover.texture = COVER_OPEN
+				_cover.visible = true
+			_:
+				_cover.visible = false
 
 
 func _has_visual_texture() -> bool:
