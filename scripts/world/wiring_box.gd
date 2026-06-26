@@ -160,6 +160,7 @@ func _make_random_wiring(count: int) -> Dictionary:
 
 func _draw() -> void:
 	if _has_visual_texture():
+		draw_shock_trap_marker(OFFSET + Vector2(SIZE.x * 0.34, -SIZE.y * 0.4))
 		return
 	var rect := Rect2(OFFSET - SIZE * 0.5, SIZE)
 	var accent := OK_COLOR if is_correct() else FAULT_COLOR

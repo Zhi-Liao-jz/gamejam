@@ -1,12 +1,40 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/heater.gd" id="1_heater"]
 [ext_resource type="Script" path="res://scripts/visuals/texture_visual.gd" id="2_visual"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_heater_base_on.tres" id="3_on"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_heater_base_off.tres" id="4_off"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_plate_idle.tres" id="5_idle"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_plate_normal.tres" id="6_normal"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_plate_overheat.tres" id="7_over"]
+[ext_resource type="Texture2D" path="res://assets/atlas/dev_heater_base_frame.tres" id="8_frame"]
 
 [node name="Heater" type="Node2D"]
 script = ExtResource("1_heater")
 
 [node name="Visual" type="Node2D" parent="."]
+position = Vector2(-150, -95)
 script = ExtResource("2_visual")
+default_texture = ExtResource("3_on")
+state_textures = {
+&"offline": ExtResource("4_off")
+}
 
 [node name="Sprite2D" type="Sprite2D" parent="Visual"]
+
+[node name="Plate0" type="Sprite2D" parent="."]
+position = Vector2(-133, 65)
+texture = ExtResource("5_idle")
+
+[node name="Plate1" type="Sprite2D" parent="."]
+position = Vector2(0, 65)
+texture = ExtResource("5_idle")
+
+[node name="Plate2" type="Sprite2D" parent="."]
+position = Vector2(133, 65)
+texture = ExtResource("5_idle")
+
+[node name="SelectFrame" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(-150, -95)
+texture = ExtResource("8_frame")

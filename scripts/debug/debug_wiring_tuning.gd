@@ -2,7 +2,7 @@ extends Node
 ## 调试面板（playtest 用，发行版自动禁用）：调接线盒每侧连接点数量范围。
 ## F3 显示 / 隐藏。改动写入 WiringTuning（autoload），下一关（work_started）生效。
 
-const PANEL_POS := Vector2(900.0, 480.0)
+const PANEL_POS := Vector2(905.0, 12.0)
 
 var _panel: PanelContainer = null
 var _min_label: Label = null
@@ -33,6 +33,7 @@ func _build_ui() -> void:
 
 	_panel = PanelContainer.new()
 	_panel.position = PANEL_POS
+	_panel.theme = _compact_theme()
 	layer.add_child(_panel)
 
 	var box := VBoxContainer.new()
@@ -57,6 +58,12 @@ func _build_ui() -> void:
 	var note := Label.new()
 	note.text = "下一关生效"
 	box.add_child(note)
+
+
+func _compact_theme() -> Theme:
+	var t := Theme.new()
+	t.default_font_size = 14
+	return t
 
 
 func _make_row(

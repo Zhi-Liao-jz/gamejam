@@ -31,7 +31,7 @@ accent = Color(0.42, 0.44, 0.48, 1)
 [sub_resource type="Resource" id="RoomDefinition_3"]
 script = ExtResource("2_room")
 room_id = 3
-grid_pos = Vector2i(0, 1)
+grid_pos = Vector2i(1, 2)
 role = &"product_exit"
 display_name = "产品出口"
 accent = Color(0.55, 0.6, 0.66, 1)
@@ -64,9 +64,9 @@ accent = Color(0.92, 0.7, 0.24, 1)
 [sub_resource type="Resource" id="RoomDefinition_7"]
 script = ExtResource("2_room")
 room_id = 7
-grid_pos = Vector2i(1, 2)
+grid_pos = Vector2i(0, 1)
 role = &"delivery"
-display_name = "下交货点 · 绿"
+display_name = "左交货点 · 绿"
 accent = Color(0.3, 0.74, 0.4, 1)
 color_key = &"green"
 

@@ -26,7 +26,7 @@ var _recent_device: BaseDevice = null  # 刚作业过的设备，冷却期内不
 var _recent_left: float = 0.0  # 上述冷却剩余秒数
 var _visual_state: StringName = &"normal"
 
-@onready var visual: TextureVisual = $Visual
+@onready var _anim: AnimatedSprite2D = $Anim
 @onready var _state_machine: BaseStateMachine = $StateMachine
 
 
@@ -168,6 +168,8 @@ func advance_toward(dest_room: int, move_speed: float, delta: float) -> bool:
 		return true  # 不可达（九宫格全连通，理论上不会发生）：视为抵达，防卡死
 	var center := room_manager.room_world_center(next)
 	var to_center := center - global_position
+	if _anim != null and absf(to_center.x) > 1.0:
+		_anim.flip_h = to_center.x < 0.0  # 朝移动方向
 	if to_center.length() <= ARRIVE_EPS:
 		global_position = center
 		current_room = next
@@ -267,10 +269,16 @@ func _draw() -> void:
 	draw_rect(Rect2(-SIZE * 0.5, SIZE), Color(0.20, 0.12, 0.05), false, 2.0)
 
 
+## 状态→动画：游荡 / 逃跑播 walk，待机 / 破坏播 idle；被捕网控制时整体染蓝。
 func _update_visual() -> void:
-	if visual != null:
-		visual.apply_state(_visual_state)
+	if _anim == null:
+		return
+	var play_walk := _visual_state == &"sneaking" or _visual_state == &"fleeing"
+	var anim_name: StringName = &"walk" if play_walk else &"idle"
+	if _anim.animation != anim_name or not _anim.is_playing():
+		_anim.play(anim_name)
+	_anim.modulate = Color(0.42, 0.62, 1.0) if _visual_state == &"captured" else Color.WHITE
 
 
 func _has_visual_texture() -> bool:
-	return visual != null and visual.has_texture()
+	return _anim != null and _anim.sprite_frames != null

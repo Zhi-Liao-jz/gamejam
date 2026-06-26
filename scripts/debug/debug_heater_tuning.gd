@@ -4,7 +4,7 @@ extends Node
 
 const STEP_GAP := 2.0  # LaserGap 每次 ±2
 const STEP_FACTOR := 0.1  # 反射镜倍数每次 ±0.1
-const PANEL_POS := Vector2(900.0, 600.0)
+const PANEL_POS := Vector2(905.0, 250.0)
 
 var _panel: PanelContainer = null
 var _gap_label: Label = null
@@ -35,6 +35,7 @@ func _build_ui() -> void:
 
 	_panel = PanelContainer.new()
 	_panel.position = PANEL_POS
+	_panel.theme = _compact_theme()
 	layer.add_child(_panel)
 
 	var box := VBoxContainer.new()
@@ -55,6 +56,12 @@ func _build_ui() -> void:
 			"反射镜倍数", _factor_label, _add_factor.bind(-STEP_FACTOR), _add_factor.bind(STEP_FACTOR)
 		)
 	)
+
+
+func _compact_theme() -> Theme:
+	var t := Theme.new()
+	t.default_font_size = 14
+	return t
 
 
 func _make_row(

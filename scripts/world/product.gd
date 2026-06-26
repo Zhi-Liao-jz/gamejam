@@ -27,6 +27,19 @@ var _was_heat_active: bool = false
 var _was_on_heater_surface: bool = false
 
 @onready var visual: TextureVisual = $Visual
+@onready var _select_frame: Sprite2D = $SelectFrame
+
+
+## 玩家光标悬停时显示 / 隐藏产品选中框（产品暂无专属框，先借用交货点框占位）。
+func set_highlighted(on: bool) -> void:
+	if _select_frame != null:
+		_select_frame.visible = on
+
+
+func _ready() -> void:
+	# setup() 在入树前调用，那时 @onready 尚未就绪；入树后补一次染色 / 贴图刷新。
+	_update_visual()
+	queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -113,6 +126,7 @@ func advance_heat(delta: float, is_overheating: bool) -> StringName:
 
 func _draw() -> void:
 	if _has_visual_texture():
+		_draw_heat_progress_only()  # 贴图已表达颜色 / 生熟焦，只在其上叠加加热 / 烧焦进度条
 		return
 	var rect := Rect2(-SIZE * 0.5, SIZE)
 	if burned:
@@ -138,6 +152,22 @@ func _draw() -> void:
 			_draw_progress(burn_frac, Color(0.95, 0.20, 0.10))  # 烧焦倒计时：快拿走
 	else:
 		draw_rect(rect, tint.lightened(0.3), false, 3.0)
+
+
+## 贴图模式下只叠加进度条：生料显示加热进度，已熟显示过热烧焦倒计时。
+func _draw_heat_progress_only() -> void:
+	if requires_heat and not heated:
+		if heat_progress > 0.0 or _is_heat_visual_active() or _is_surface_visual_active():
+			var progress_color := Color(0.55, 0.55, 0.50)
+			if _is_heat_visual_active():
+				progress_color = Color(1.0, 0.6, 0.1)
+			_draw_progress(_heat_fraction(), progress_color)
+	elif heated and not burned:
+		var burn_frac := clampf(
+			overheat_wait_time / GameConfig.product().overheat_burn_time, 0.0, 1.0
+		)
+		if burn_frac > 0.0 and _is_heat_visual_active():
+			_draw_progress(burn_frac, Color(0.95, 0.20, 0.10))
 
 
 ## 在产品下方画一条进度条（frac 0..1）。
@@ -193,8 +223,23 @@ func _visual_state() -> StringName:
 
 
 func _update_visual() -> void:
-	if visual != null:
-		visual.apply_state(_visual_state())
+	if visual == null:
+		return
+	visual.apply_state(_visual_state())
+	# 产品贴图是单张中性色，颜色 / 生熟焦状态全部用 self_modulate 表达。
+	if visual.sprite != null:
+		visual.sprite.self_modulate = _tint_for_state()
+
+
+## 当前状态下产品贴图的染色：焦黑 / 生料压暗 / 已熟提亮 / 正常取交货色。
+func _tint_for_state() -> Color:
+	if burned:
+		return Color(0.18, 0.16, 0.15)
+	if requires_heat and not heated:
+		return tint.darkened(0.45)
+	if heated:
+		return tint.lightened(0.12)
+	return tint
 
 
 func _has_visual_texture() -> bool:
